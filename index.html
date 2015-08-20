@@ -1,0 +1,38 @@
+<html>
+<head>
+<link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/themes/smoothness/jquery-ui.css">
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.js"></script>
+
+<script type="application/javascript" src="GoLGrid.js"></script>
+<link rel="stylesheet" type="text/css" href="GoLGrid.css" />
+</head>
+<body>
+<div id="grid1" class="GoLGrid block">
+</div>
+<script>
+var g = new GoLGrid(document, "90%", "80%", 91, 143 );	// Prefer and odd number of lines so there is a middle
+</script>
+<br>
+<div class="container" width="80%" height="20%">
+<div id="col1" class="col">
+	<div id="activeCell" class="sts">Active Cell: </div>
+	<div id="status" class="sts">Status: Stopped</div>
+	<div id="timing" class="sts">Actual Timing: ???</div>
+	<div>
+	Interval(ms): <input type="text" id="txtInterval" value="50"/>
+	<input id="startStopBtn" type="button" value="Start" onclick="g.startStop()"/>
+	</div>
+</div><div id="col2" class="col"><!--  Force no space between divs, do not move -->
+	<div id="extraBirthsDeaths"> 
+	Extra random births on test (per 1000): <input type="text" id="extraBirthsPerThousand" value="0"/>
+	Extra random deaths on test (per 1000): <input type="text" id="extraDeathsPerThoursand" value="0"/>
+	</div>
+	<div id="cellFertility">
+	Increase births on test (per 1000): <input type="text" id="increaseFertilityPerThousand" value="0" />
+	Increase deaths on test (per 1000): <input type="text" id="increaseDeathPerThousand" value="0" />
+	</div>
+</div>
+</div>
+</body>
+</html>
