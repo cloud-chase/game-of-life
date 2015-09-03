@@ -43,26 +43,15 @@
 	background-color: gray !important;
 }
 .container{
-  width: 80%;
+  width: 90%;
+  height: 20%;
   display: inline-block;
 
   -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
   -moz-box-sizing: border-box;    /* Firefox, other Gecko */
   box-sizing: border-box;
 }
-.col{
+.col {
   display: inline-block;
-  vertical-align: top;
-
-  -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
-  -moz-box-sizing: border-box;    /* Firefox, other Gecko */
-  box-sizing: border-box;
-}
-#col1{
-	width:30%;
-	height:100%;
-}
-#col2{
-	width:70%;
-	height:100%;
+  width: 30%;
 }

@@ -14,25 +14,40 @@
 var g = new GoLGrid(document, "90%", "80%", 91, 143 );	// Prefer and odd number of lines so there is a middle
 </script>
 <br>
-<div class="container" width="80%" height="20%">
-<div id="col1" class="col">
-	<div id="activeCell" class="sts">Active Cell: </div>
-	<div id="status" class="sts">Status: Stopped</div>
-	<div id="timing" class="sts">Actual Timing: ???</div>
+<div class="container">
 	<div>
-	Interval(ms): <input type="text" id="txtInterval" value="20"/>
-	<input id="startStopBtn" type="button" value="Start" onclick="g.startStop()"/>
+		<span class="col" id="activeCell">Active Cell: </span>
+		<span id="extraBirthsDeaths">
+			<span class="col">
+				Extra random births on test (per 1000): <input type="text" id="extraBirthsPerThousand" value="0"/>
+			</span>
+			<span class="col">
+				Extra random deaths on test (per 1000): <input type="text" id="extraDeathsPerThoursand" value="0"/>
+			</span>
+		</span>
 	</div>
-</div><div id="col2" class="col"><!--  Force no space between divs, do not move -->
-	<div id="extraBirthsDeaths">
-	Extra random births on test (per 1000): <input type="text" id="extraBirthsPerThousand" value="0"/>
-	Extra random deaths on test (per 1000): <input type="text" id="extraDeathsPerThoursand" value="0"/>
+	<div>
+		<span class="col" id="status">Status: Stopped</span>
+		<span id="cellFertility">
+			<span class="col">
+				Increase births on test (per 1000): <input type="text" id="increaseFertilityPerThousand" value="0" />
+			</span>
+			<span class="col">
+				Increase deaths on test (per 1000): <input type="text" id="increaseDeathPerThousand" value="0" />
+			</span>
+		</span>
 	</div>
-	<div id="cellFertility">
-	Increase births on test (per 1000): <input type="text" id="increaseFertilityPerThousand" value="0" />
-	Increase deaths on test (per 1000): <input type="text" id="increaseDeathPerThousand" value="0" />
+	<div>
+		<span class="col" id="">Actual Timing: <span id="timing-value"></span>ms</span>
+		<span class="col" id="">Iterations: <span id="iterations"></span></span>
+		<span class="col" id="">Life: <span id="life-count"></span></span>
 	</div>
-</div>
+	<div>
+		<span class="col">
+			Interval(ms): <input type="text" id="txtInterval" value="20"/>
+			<input id="startStopBtn" type="button" value="Start" onclick="g.startStop()"/>
+		</span>
+	</div>
 </div>
 </body>
 </html>

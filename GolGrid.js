@@ -29,6 +29,7 @@
 					extraDeathsRate = 0,
 					increaseFertilityRate = 0,
 					increaseDeathRate = 0,
+					iterations = 0,
 				toggleAlive = function (cellDiv) {
 					var $cellDiv = $(cellDiv),
 						r = Number($cellDiv.attr('row')),
@@ -251,12 +252,20 @@
 
 				golStatusMgr = function() {
 					var timer = 0,
-						lastTime = 0,
+						lastTime = [],
 						tick = 0,
 						that = {};
 
 					tick = function() {
-						$("#timing").text("Actual Timing: " + (lastTime) + "ms");
+						var count = lastTime.length;
+						var output;
+						if (count > 0) {
+							output = lastTime.reduce(function(a,b) { return a + b; }) / count;
+							lastTime = [];
+							$("#timing-value").text(output.toFixed(2));
+						}
+						$("#iterations").text(iterations.toString());
+						$("#life-count").text(living.length.toString());
 					}
 					that.start = function() {
 						timer = setInterval(tick, 1000); // report once per second
@@ -265,7 +274,7 @@
 						clearInterval(timer);
 					};
 					that.golTiming = function(t) {
-						lastTime = t;
+						lastTime.push(t);
 					};
 					return that;
 				},
@@ -277,6 +286,7 @@
 						d = new Date(),
 						thisTime = d.getTime(); // milliseconds since 01/01 1970
 
+					iterations += 1;
 					if (lastTime !== 0) {
 						golStatus.golTiming(thisTime-lastTime);
 					}
