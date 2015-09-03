@@ -22,6 +22,7 @@
 					possibleList=[],
 					dyingList=[],
 					birthList=[],
+					golStatus = {},
 					gridWidth=0,
 					gridHeight=0,
 					extraBirthsRate = 0,
@@ -29,11 +30,10 @@
 					increaseFertilityRate = 0,
 					increaseDeathRate = 0,
 				toggleAlive = function (cellDiv) {
-					var $cellDiv = $(cellDiv);
-					var r = Number($cellDiv.attr('row')),
-						c = Number($cellDiv.attr('col'));
-
-					var cell = cellRefs[r][c];
+					var $cellDiv = $(cellDiv),
+						r = Number($cellDiv.attr('row')),
+						c = Number($cellDiv.attr('col')),
+						cell = cellRefs[r][c];
 
 					if (cell.alive) {
 						living.splice(living.indexOf(cell), 1);
@@ -249,25 +249,38 @@
 					dyingList = [];
 				},
 
+				golStatusMgr = function() {
+					var timer = 0,
+						lastTime = 0,
+						tick = 0,
+						that = {};
+
+					tick = function() {
+						$("#timing").text("Actual Timing: " + (lastTime) + "ms");
+					}
+					that.start = function() {
+						timer = setInterval(tick, 1000); // report once per second
+					};
+					that.stop = function() {
+						clearInterval(timer);
+					};
+					that.golTiming = function(t) {
+						lastTime = t;
+					};
+					return that;
+				},
+
 				lastTime = 0,
-				tickCount = -1,
-				showOnTick = 50,
 				goLStep = function ()
 				{
-					var d, thisTime;
-					if (tickCount === -1) {
-						d = new Date();
+					var d, thisTime,
+						d = new Date(),
 						thisTime = d.getTime(); // milliseconds since 01/01 1970
-						lastTime = thisTime;
+
+					if (lastTime !== 0) {
+						golStatus.golTiming(thisTime-lastTime);
 					}
-					tickCount += 1;
-					if (tickCount === showOnTick) {
-						d = new Date();
-						thisTime = d.getTime(); // milliseconds since 01/01 1970
-						$("#timing").text("Actual Timing: " + (thisTime-lastTime)/showOnTick + "ms");
-						tickCount = 0;
-						lastTime = thisTime;
-					}
+					lastTime = thisTime;
 
 					checkGoLCellStates(
 						function (sum, cell) { // handleSum
@@ -302,6 +315,7 @@
 				};
 				*/
 				timerGoL = 0;
+				golStatus = golStatusMgr();
 				GoLGrid.prototype.startStop = function () {
 					if (timerGoL === 0) {
 						extraBirthsRate = $("#extraBirthsPerThousand").val() / 1000.0;
@@ -311,8 +325,10 @@
 						timerGoL = setInterval(function (){goLStep();},$("#txtInterval").val());
 						$("#startStopBtn").attr('value', 'Stop');
 						$("#status").text("Status: Running");
+						golStatus.start();
 					} else {
 						clearInterval(timerGoL);
+						golStatus.stop();
 						timerGoL = 0;
 						$("#startStopBtn").attr('value', 'Start');
 						$("#status").text("Status: Stopped");
