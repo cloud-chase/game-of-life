@@ -250,14 +250,24 @@
 				},
 
 				lastTime = 0,
+				tickCount = -1,
+				showOnTick = 50,
 				goLStep = function ()
 				{
-					var d = new Date();
-					var thisTime = d.getTime(); // milliseconds since 01/01 1970
-					if (lastTime !== 0) {
-						$("#timing").text("Actual Timing: " + (thisTime-lastTime) + "ms");
+					var d, thisTime;
+					if (tickCount === -1) {
+						d = new Date();
+						thisTime = d.getTime(); // milliseconds since 01/01 1970
+						lastTime = thisTime;
 					}
-					lastTime = thisTime;
+					tickCount += 1;
+					if (tickCount === showOnTick) {
+						d = new Date();
+						thisTime = d.getTime(); // milliseconds since 01/01 1970
+						$("#timing").text("Actual Timing: " + (thisTime-lastTime)/showOnTick + "ms");
+						tickCount = 0;
+						lastTime = thisTime;
+					}
 
 					checkGoLCellStates(
 						function (sum, cell) { // handleSum

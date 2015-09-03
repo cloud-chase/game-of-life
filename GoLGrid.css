@@ -9,7 +9,7 @@
 .GoLGrid {
 /*	width:200px; */
 /*	height:200px; */
-	border:1px solid; 
+	border:1px solid;
 }
 .GoLRow {
 /*	width:100%; */
@@ -19,6 +19,16 @@
 /*	width:10%;	*/
 /*	height:100%; */
 /*	border:1px solid; */
+  -moz-user-select: none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+
+  /*
+   Introduced in IE 10.
+   See http://ie.microsoft.com/testdrive/HTML5/msUserSelect/
+  */
+  -ms-user-select: none;
+  user-select: none;
 }
 .light{
 	background-color:white;
@@ -35,15 +45,15 @@
 .container{
   width: 80%;
   display: inline-block;
-  
+
   -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
   -moz-box-sizing: border-box;    /* Firefox, other Gecko */
   box-sizing: border-box;
 }
 .col{
   display: inline-block;
-  vertical-align: top;	
-  
+  vertical-align: top;
+
   -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
   -moz-box-sizing: border-box;    /* Firefox, other Gecko */
   box-sizing: border-box;
