@@ -46,6 +46,15 @@ var g = new GoLGrid(document, "90%", "80%", 91, 143 );	// Prefer and odd number 
 		<span class="col">
 			Interval(ms): <input type="text" id="txtInterval" value="20"/>
 			<input id="startStopBtn" type="button" value="Start" onclick="g.startStop()"/>
+			<input id="clearBtn" type="button" value="Clear" onclick="g.clear()"/>
+		</span>
+		<span class="col">Select a shape:
+			<select id="shape">
+				<option value="0">Dot</option>
+				<option value="1">Glider</option>
+				<option value="2">Lightwieght Spaceship</option>
+				<option value="3">Acorn</option>
+			</select>
 		</span>
 	</div>
 </div>
