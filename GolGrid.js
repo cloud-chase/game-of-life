@@ -36,7 +36,9 @@
 						default: 0,
 						glider: 1,
 						lightwightSpaceship: 2,
-						acorn: 3
+						acorn: 3,
+						pentadecathlon: 4,
+						pulsar: 5
 					},
 					toggleShapeInner = function (cell, toggleClass, forceOff) {
 						if (forceOff || cell.div.hasClass(toggleClass)) {
@@ -87,6 +89,71 @@
 								toggleShapeInner(torroidCelRef(r+2, c+3), toggleClass, forceOff);
 								toggleShapeInner(torroidCelRef(r+2, c+4), toggleClass, forceOff);
 								toggleShapeInner(torroidCelRef(r+2, c+5), toggleClass, forceOff);
+								break;
+							case shapes.pentadecathlon:
+								toggleShapeInner(cellRefs[r][c], toggleClass, forceOff);
+								toggleShapeInner(torroidCelRef(r, c+1), toggleClass, forceOff);
+								toggleShapeInner(torroidCelRef(r-1, c+2), toggleClass, forceOff);
+								toggleShapeInner(torroidCelRef(r+1, c+2), toggleClass, forceOff);
+								toggleShapeInner(torroidCelRef(r, c+3), toggleClass, forceOff);
+								toggleShapeInner(torroidCelRef(r, c+4), toggleClass, forceOff);
+								toggleShapeInner(torroidCelRef(r, c+5), toggleClass, forceOff);
+								toggleShapeInner(torroidCelRef(r, c+6), toggleClass, forceOff);
+								toggleShapeInner(torroidCelRef(r-1, c+7), toggleClass, forceOff);
+								toggleShapeInner(torroidCelRef(r+1, c+7), toggleClass, forceOff);
+								toggleShapeInner(torroidCelRef(r, c+8), toggleClass, forceOff);
+								toggleShapeInner(torroidCelRef(r, c+9), toggleClass, forceOff);
+								break;
+							case shapes.pulsar:
+								toggleShapeInner(cellRefs[r][c], toggleClass, forceOff);
+								toggleShapeInner(torroidCelRef(r, c+1), toggleClass, forceOff);
+								toggleShapeInner(torroidCelRef(r, c+2), toggleClass, forceOff);
+								toggleShapeInner(torroidCelRef(r, c+6), toggleClass, forceOff);
+								toggleShapeInner(torroidCelRef(r, c+7), toggleClass, forceOff);
+								toggleShapeInner(torroidCelRef(r, c+8), toggleClass, forceOff);
+								toggleShapeInner(torroidCelRef(r+2, c-2), toggleClass, forceOff);
+								toggleShapeInner(torroidCelRef(r+2, c+3), toggleClass, forceOff);
+								toggleShapeInner(torroidCelRef(r+2, c+5), toggleClass, forceOff);
+								toggleShapeInner(torroidCelRef(r+2, c+10), toggleClass, forceOff);
+								toggleShapeInner(torroidCelRef(r+3, c-2), toggleClass, forceOff);
+								toggleShapeInner(torroidCelRef(r+3, c+3), toggleClass, forceOff);
+								toggleShapeInner(torroidCelRef(r+3, c+5), toggleClass, forceOff);
+								toggleShapeInner(torroidCelRef(r+3, c+10), toggleClass, forceOff);
+								toggleShapeInner(torroidCelRef(r+4, c-2), toggleClass, forceOff);
+								toggleShapeInner(torroidCelRef(r+4, c+3), toggleClass, forceOff);
+								toggleShapeInner(torroidCelRef(r+4, c+5), toggleClass, forceOff);
+								toggleShapeInner(torroidCelRef(r+4, c+10), toggleClass, forceOff);
+								toggleShapeInner(torroidCelRef(r+5, c), toggleClass, forceOff);
+								toggleShapeInner(torroidCelRef(r+5, c+1), toggleClass, forceOff);
+								toggleShapeInner(torroidCelRef(r+5, c+2), toggleClass, forceOff);
+								toggleShapeInner(torroidCelRef(r+5, c+6), toggleClass, forceOff);
+								toggleShapeInner(torroidCelRef(r+5, c+7), toggleClass, forceOff);
+								toggleShapeInner(torroidCelRef(r+5, c+8), toggleClass, forceOff);
+								toggleShapeInner(torroidCelRef(r+7, c), toggleClass, forceOff);
+								toggleShapeInner(torroidCelRef(r+7, c+1), toggleClass, forceOff);
+								toggleShapeInner(torroidCelRef(r+7, c+2), toggleClass, forceOff);
+								toggleShapeInner(torroidCelRef(r+7, c+6), toggleClass, forceOff);
+								toggleShapeInner(torroidCelRef(r+7, c+7), toggleClass, forceOff);
+								toggleShapeInner(torroidCelRef(r+7, c+8), toggleClass, forceOff);
+								toggleShapeInner(torroidCelRef(r+8, c-2), toggleClass, forceOff);
+								toggleShapeInner(torroidCelRef(r+8, c+3), toggleClass, forceOff);
+								toggleShapeInner(torroidCelRef(r+8, c+5), toggleClass, forceOff);
+								toggleShapeInner(torroidCelRef(r+8, c+10), toggleClass, forceOff);
+								toggleShapeInner(torroidCelRef(r+9, c-2), toggleClass, forceOff);
+								toggleShapeInner(torroidCelRef(r+9, c+3), toggleClass, forceOff);
+								toggleShapeInner(torroidCelRef(r+9, c+5), toggleClass, forceOff);
+								toggleShapeInner(torroidCelRef(r+9, c+10), toggleClass, forceOff);
+								toggleShapeInner(torroidCelRef(r+10, c-2), toggleClass, forceOff);
+								toggleShapeInner(torroidCelRef(r+10, c+3), toggleClass, forceOff);
+								toggleShapeInner(torroidCelRef(r+10, c+5), toggleClass, forceOff);
+								toggleShapeInner(torroidCelRef(r+10, c+10), toggleClass, forceOff);
+								toggleShapeInner(torroidCelRef(r+12, c), toggleClass, forceOff);
+								toggleShapeInner(torroidCelRef(r+12, c+1), toggleClass, forceOff);
+								toggleShapeInner(torroidCelRef(r+12, c+2), toggleClass, forceOff);
+								toggleShapeInner(torroidCelRef(r+12, c+6), toggleClass, forceOff);
+								toggleShapeInner(torroidCelRef(r+12, c+7), toggleClass, forceOff);
+								toggleShapeInner(torroidCelRef(r+12, c+8), toggleClass, forceOff);
+
 								break;
 							default:
 								toggleShapeInner(cellRefs[r][c], toggleClass, forceOff);
