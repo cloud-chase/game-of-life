@@ -15,6 +15,8 @@
 					}
 				}
 			};
+  
+  // Dave woz 'ere
 
 			moduleMaker("GoLGrid", function() {
 				var cellRefs=0,
