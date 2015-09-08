@@ -30,18 +30,24 @@
   -ms-user-select: none;
   user-select: none;
 }
-.light{
-	background-color:white;
-}
-.dark{
+
+.GoLRow:nth-of-type(2n+1) .GoLCell:nth-of-type(2n),
+.GoLRow:nth-of-type(2n) .GoLCell:nth-of-type(2n+1) {
 	background-color: lavender;
 }
-.alive{
-	background-color: black !important;
+
+.GoLRow:nth-of-type(n) .GoLCell.prenatal:nth-of-type(n) {
+  background-color: gray;
 }
-.prenatal{
-	background-color: gray !important;
+
+.GoLRow:nth-of-type(n) .alive:nth-of-type(n) {
+  background-color: black;
 }
+
+.GoLRow:nth-of-type(n) .alive.prenatal:nth-of-type(n) {
+  background-color: gray;
+}
+
 .container{
   width: 90%;
   height: 20%;
