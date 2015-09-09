@@ -122,6 +122,13 @@ define(function() {
       getNumberLiving = function() {
         return living.length;
       },
+      
+      clearLiving = function() {
+        living.forEach(function(cell) {
+          cell.div.removeClass('alive');
+        });
+        living = [];   
+      },
 
       setAlive = function(cell, alive) {
         if (alive && !cell.alive) {
@@ -170,6 +177,7 @@ define(function() {
     getCell: getCell,
     forEachLiving: forEachLiving,
     getNumberLiving: getNumberLiving,
+    clearLiving: clearLiving,
     setAlive: setAlive,
     isAlive: isAlive,
     getCellNeighbours: getCellNeighbours,

@@ -208,9 +208,7 @@ define(['jquery', 'app/div-renderer', 'jquery-ui'], function($, divrenderer) {
   };
 
   GoLGrid.prototype.clear = function() {
-    divrenderer.forEachLiving(function(cell) {
-      divrenderer.setAlive(cell, false);
-    });
+    divrenderer.clearLiving();
   };
 
   $(function() {
