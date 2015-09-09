@@ -1,26 +1,14 @@
 define(function() {
 
   // this is the renderer code, separated from the game function code
-  var gridHeight = 0,
-      gridWidth = 0,
-      cellRefs = [],
-      living = [],
-      cursorShape = [[0,0]],
+  var cursorShape = [[0,0]],
 
-      addLiving = function(cell) {
-        living.push(cell);
-        cell.alive = true;
-      },
-
-      removeLiving = function(cell) {
-        living.splice(living.indexOf(cell), 1);
-        cell.alive = false;
-      }, 
-
-      makeGrid = function(doc, rows, cols) {
-        gridHeight = rows;
-        gridWidth = cols;
-        cellRefs = [];
+      /**
+        Initialise the renderer. The HTML document is supplied, and the rows
+        and columns that the rendered grid should display, and a model which
+        the renderer will use.
+      */
+      init = function(doc, rows, cols, model) {
 
         var grid = doc.getElementById("grid1"),
             row, cell,
@@ -36,7 +24,6 @@ define(function() {
         for (var r = 0; r < rows; r++) {
           row = addDivTo(doc, grid, "GoLRow block", "r" + r.toString());
           row.visible = true;
-          cellRefs[r] = [];
 
           for (var c = 0; c < cols; c++) {
             cell = addDivTo(doc, row, "GoLCell block", "r" + r.toString() + "c" + c.toString());
@@ -44,13 +31,7 @@ define(function() {
             cell.setAttribute('row', r); // chose this to keep jquery in thie file to minimum
             cell.setAttribute('col', c); // javascript dom
 
-            cellRefs[r][c] = {
-              row: r,
-              col: c,
-              alive: false,
-              div: $(cell),
-              data: {}
-            };
+            model.getCell(r, c).data.div = $(cell);
           }
         }
 
@@ -59,15 +40,17 @@ define(function() {
 
         var mouseDown = false,
             toggleShapeInner = function(cell, toggleClass, forceOff) {
-              if (forceOff || cell.div.hasClass(toggleClass)) {
-                cell.div.removeClass(toggleClass);
+              if (forceOff || cell.data.div.hasClass(toggleClass)) {
                 if (toggleClass === 'alive') {
-                  removeLiving(cell);
+                  model.setAlive(cell, false);
+                } else {
+                  cell.data.div.removeClass(toggleClass);
                 }
               } else {
-                cell.div.addClass(toggleClass);
                 if (toggleClass === 'alive') {
-                  addLiving(cell);
+                  model.setAlive(cell, true);
+                } else {
+                  cell.data.div.addClass(toggleClass);
                 }
               }
             },
@@ -78,7 +61,7 @@ define(function() {
                   cell;
 
               for (var i = 0; i < shape.length; i++) {
-                cell = getCell(r + shape[i][0], c + shape[i][1]);
+                cell = model.getCell(r + shape[i][0], c + shape[i][1]);
                 cell && toggleShapeInner(cell, toggleClass, forceOff);
               }
             };
@@ -110,77 +93,29 @@ define(function() {
         });
 
       },
-
-      getCell = function(row, col) {
-        return cellRefs[(row % gridHeight + gridHeight) % gridHeight][(col % gridWidth + gridWidth) % gridWidth];
-      },
       
-      forEachLiving = function(handler) {
-        living.forEach(handler);
-      },
-      
-      getNumberLiving = function() {
-        return living.length;
-      },
-      
-      clearLiving = function() {
-        living.forEach(function(cell) {
-          cell.div.removeClass('alive');
-        });
-        living = [];   
+      /**
+        Register the change of state of a cell. This method should be called
+        every time the state of a cell in the model changes, to enable the 
+        renderer to reflect the current state of all cells in the model.
+      */
+      cellChanged = function(cell) {
+        cell.data.div.toggleClass('alive', cell.alive);
       },
 
-      setAlive = function(cell, alive) {
-        if (alive && !cell.alive) {
-          cell.div.addClass('alive');
-          addLiving(cell);
-        } else if (!alive && cell.alive) {
-          cell.div.removeClass('alive');
-          removeLiving(cell);
-        }
-      },
-
-      isAlive = function(cell) {
-        return cell.alive;
-      },
-
-      getCellNeighbours = function(cell) {
-        var result = cell.neighbours;
-
-        if (!result) {
-          var r = Number($(cell).attr('row')),
-              c = Number($(cell).attr('col'));
-
-          result = [
-            getCell(r-1, c-1),
-            getCell(r-1, c),
-            getCell(r-1, c+1),
-            getCell(r, c-1),
-            getCell(r, c+1),
-            getCell(r+1, c-1),
-            getCell(r+1, c),
-            getCell(r+1, c+1)
-          ];
-
-          cell.neighbours = result;
-        }
-
-        return result;
-      },
-
+      /**
+        Set the shape of the user interaction cursor. The shape is supplied as
+        an array of cell offsets, each of which is an array of two elements
+        being the row and column offsets from the starting cell of each cell
+        to form part of the cursor shape.
+      */
       setCursorShape = function(shape) {
         cursorShape = shape;
       };
 
   return {
-    makeGrid: makeGrid,
-    getCell: getCell,
-    forEachLiving: forEachLiving,
-    getNumberLiving: getNumberLiving,
-    clearLiving: clearLiving,
-    setAlive: setAlive,
-    isAlive: isAlive,
-    getCellNeighbours: getCellNeighbours,
+    init: init,
+    cellChanged: cellChanged,
     setCursorShape: setCursorShape
   };
   
