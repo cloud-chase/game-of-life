@@ -7,15 +7,23 @@ define(function() {
       callback = undefined,
 
       addLiving = function(cell) {
-        living.push(cell);
-        cell.alive = true;
-        callback.fire(cell);
+        if (cell.length !== undefined) {
+          cell.forEach(addLiving);
+        } else if (!cell.alive) {
+          living.push(cell);
+          cell.alive = true;
+          callback.fire(cell);
+        }
       },
 
       removeLiving = function(cell) {
-        living.splice(living.indexOf(cell), 1);
-        cell.alive = false;
-        callback.fire(cell);
+        if (cell.length !== undefined) {
+          cell.forEach(removeLiving);
+        } else if (cell.alive) {
+          living.splice(living.indexOf(cell), 1);
+          cell.alive = false;
+          callback.fire(cell);
+        }
       }, 
 
       /**
@@ -30,19 +38,6 @@ define(function() {
         cellRefs = [];
         living = [];
         callback = cellcallback;
-
-        for (var r = 0; r < rows; r++) {
-          cellRefs[r] = [];
-
-          for (var c = 0; c < cols; c++) {
-            cellRefs[r][c] = {
-              row: r,
-              col: c,
-              alive: false,
-              data: {}
-            };
-          }
-        }
       },
 
       /**
@@ -56,7 +51,23 @@ define(function() {
         entirely for the client's own use.
       */
       getCell = function(row, col) {
-        return cellRefs[(row % gridHeight + gridHeight) % gridHeight][(col % gridWidth + gridWidth) % gridWidth];
+        var r = (row % gridHeight + gridHeight) % gridHeight,
+            c = (col % gridWidth + gridWidth) % gridWidth;
+        
+        if (!cellRefs[r]) {
+          cellRefs[r] = [];
+        }
+        
+        if (!cellRefs[r][c]) {
+          cellRefs[r][c] = {
+            row: r,
+            col: c,
+            alive: false,
+            data: {}
+          };
+        }
+        
+        return cellRefs[r][c];
       },
       
       /**
@@ -85,14 +96,11 @@ define(function() {
       },
 
       /**
-        Set the state of a cell to living or not living.
+        Set the state of a cell to living or not living, or the states of
+        all cells in an array to living or not living.
       */
       setAlive = function(cell, alive) {
-        if (alive && !cell.alive) {
-          addLiving(cell);
-        } else if (!alive && cell.alive) {
-          removeLiving(cell);
-        }
+        alive ? addLiving(cell) : removeLiving(cell);
       },
 
       /**

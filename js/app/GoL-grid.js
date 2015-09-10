@@ -40,13 +40,11 @@ define(['jquery', 'app/GoL-model', 'app/div-renderer', 'jquery-ui'], function($,
           i;
 
         sum = 0;
-        for (i = 0; i < 8; i++) {
-          if (n[i] !== undefined) {
-            if (!n[i].alive) { // always checking alive state here
-              handleAdjacent(n[i]);
-            } else {
-              sum += 1;
-            }
+        for (i = 0; i < n.length; i++) {
+          if (!n[i].alive) { // always checking alive state here
+            handleAdjacent(n[i]);
+          } else {
+            sum += 1;
           }
         }
         handleSum(sum, cell);
@@ -67,11 +65,13 @@ define(['jquery', 'app/GoL-model', 'app/div-renderer', 'jquery-ui'], function($,
         possibleList.forEach(function(cell) {
           checkGoLCellState(cell,
             function(sum, cell) { // handleSum
-              if (sum === 3 || Math.random() < extraBirthsRate || Math.random() < (cell.data.fertilityRate || 0) ) {
+              if ( (sum === 3) ||
+                   ((extraBirthsRate > 0) && (Math.random() < extraBirthsRate)) || 
+                   ((cell.data.fertilityRate > 0) && (Math.random() < cell.data.fertilityRate)) ) {
                 birthList.push(cell);
                 cell.data.fertilityRate = 0; // reset
                 cell.data.deathRate = 0;
-              } else {
+              } else if (increaseFertilityRate > 0) {
                 cell.data.fertilityRate = (cell.data.fertilityRate || 0) + increaseFertilityRate;
               }
             }, function() { // handleAdjacents
@@ -80,29 +80,13 @@ define(['jquery', 'app/GoL-model', 'app/div-renderer', 'jquery-ui'], function($,
           );
         });
 
-        possibleList = [];
+        possibleList.length = 0;
+        
+        model.setAlive(birthList, true);
+        birthList.length = 0;
 
-        // filter duplicate births *********
-        birthList = birthList.filter(function(elem, pos, arr) {
-          return arr.indexOf(elem) === pos;
-        });
-
-        birthList.forEach(function(cell) {
-          model.setAlive(cell, true);
-        });
-
-        birthList = [];
-
-        // filter duplicates
-        dyingList = dyingList.filter(function(elem, pos, arr) {
-          return arr.indexOf(elem) === pos;
-        });
-
-        dyingList.forEach(function(cell) {
-          model.setAlive(cell, false);
-        });
-
-        dyingList = [];
+        model.setAlive(dyingList, false);
+        dyingList.length = 0;
       },
 
       golStatusMgr = function() {
@@ -156,11 +140,14 @@ define(['jquery', 'app/GoL-model', 'app/div-renderer', 'jquery-ui'], function($,
 
         checkGoLCellStates(
           function(sum, cell) { // handleSum
-            if ((sum < 2) || (sum > 3) || Math.random() < extraDeathsRate || Math.random() < (cell.data.deathRate || 0)) {
+            if ( (sum < 2) ||
+                 (sum > 3) ||
+                 ((extraDeathsRate > 0) && (Math.random() < extraDeathsRate)) || 
+                 ((cell.data.deathRate > 0) && (Math.random() < cell.data.deathRate)) ) {
               dyingList.push(cell);
               cell.data.fertilityRate = 0; // reset
               cell.data.deathRate = 0;
-            } else {
+            } else if (increaseDeathRate > 0) {
               cell.data.deathRate = (cell.data.deathRate || 0) + increaseDeathRate;
             }
           }, function(cell) { // handleAdjacents
