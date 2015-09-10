@@ -11,21 +11,26 @@ define(function() {
       init = function(doc, rows, cols, model) {
 
         var grid = doc.getElementById("grid1"),
-            row, cell,
+            row, cell, background_grid, background_row, foreground_grid;
 
-            addDivTo = function(doc, hostDiv, newDivClass, newDivID) {
-              var newDiv = doc.createElement("Div");
-              newDiv.className = newDivClass;
-              newDiv.id = newDivID;
-              hostDiv.appendChild(newDiv);
-              return newDiv;
-            };
+        addDivTo = function(doc, hostDiv, newDivClass, newDivID) {
+          var newDiv = doc.createElement("Div");
+          newDiv.className = newDivClass;
+          newDiv.id = newDivID;
+          hostDiv.appendChild(newDiv);
+          return newDiv;
+        };
+
+        background_grid = addDivTo(doc, grid, 'background-grid', '');
+        foreground_grid = addDivTo(doc, grid, 'foreground-grid', '')
 
         for (var r = 0; r < rows; r++) {
-          row = addDivTo(doc, grid, "GoLRow block", "r" + r.toString());
+          background_row = addDivTo(doc, background_grid, 'GoLRow block','');
+          row = addDivTo(doc, foreground_grid, "GoLRow block", "r" + r.toString());
           row.visible = true;
 
           for (var c = 0; c < cols; c++) {
+            addDivTo(doc, background_row, 'GoLCell block','');
             cell = addDivTo(doc, row, "GoLCell block", "r" + r.toString() + "c" + c.toString());
             cell.visible = true;
             cell.setAttribute('row', r); // chose this to keep jquery in thie file to minimum
@@ -66,16 +71,16 @@ define(function() {
               }
             };
 
-        $('.GoLCell').mousedown(function() {
+        $('.foreground-grid .GoLCell').mousedown(function() {
           toggleShape(this, cursorShape, 'alive');
           mouseDown = true;
         });
 
-        $('.GoLCell').mouseup(function() {
+        $('.foreground-grid .GoLCell').mouseup(function() {
           mouseDown = false;
         });
 
-        $('.GoLCell').mouseenter(function() {
+        $('.foreground-grid .GoLCell').mouseenter(function() {
           var r = Number($(this).attr('row')),
               c = Number($(this).attr('col'));
 
@@ -88,15 +93,15 @@ define(function() {
           }
         });
 
-        $('.GoLCell').mouseleave(function() {
+        $('.foreground-grid .GoLCell').mouseleave(function() {
           toggleShape(this, cursorShape, 'prenatal', true);
         });
 
       },
-      
+
       /**
         Register the change of state of a cell. This method should be called
-        every time the state of a cell in the model changes, to enable the 
+        every time the state of a cell in the model changes, to enable the
         renderer to reflect the current state of all cells in the model.
       */
       cellChanged = function(cell) {
@@ -118,5 +123,5 @@ define(function() {
     cellChanged: cellChanged,
     setCursorShape: setCursorShape
   };
-  
+
 });
