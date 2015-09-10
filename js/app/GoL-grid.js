@@ -1,4 +1,4 @@
-define(['jquery', 'app/div-renderer', 'jquery-ui'], function($, divrenderer) {
+define(['jquery', 'app/GoL-model', 'app/div-renderer', 'jquery-ui'], function($, model, divrenderer) {
   
   var possibleList=[],
       dyingList=[],
@@ -35,14 +35,14 @@ define(['jquery', 'app/div-renderer', 'jquery-ui'], function($, divrenderer) {
 
       checkGoLCellState = function(cell, handleSum, handleAdjacent) {
         // Individual cell processor
-        var n = divrenderer.getCellNeighbours(cell),// adjacent
+        var n = model.getCellNeighbours(cell),// adjacent
           sum,
           i;
 
         sum = 0;
         for (i = 0; i < 8; i++) {
           if (n[i] !== undefined) {
-            if (!divrenderer.isAlive(n[i])) { // always checking alive state here
+            if (!n[i].alive) { // always checking alive state here
               handleAdjacent(n[i]);
             } else {
               sum += 1;
@@ -54,7 +54,7 @@ define(['jquery', 'app/div-renderer', 'jquery-ui'], function($, divrenderer) {
 
       checkGoLCellStates = function(handleSum, handleAdjacent) {
         // process living cells
-        divrenderer.forEachLiving(function(cell) {
+        model.forEachLiving(function(cell) {
           // select just living cells, keep processing to a minimum (efficient?)
           checkGoLCellState(cell, handleSum, handleAdjacent);
         });
@@ -88,7 +88,7 @@ define(['jquery', 'app/div-renderer', 'jquery-ui'], function($, divrenderer) {
         });
 
         birthList.forEach(function(cell) {
-          divrenderer.setAlive(cell, true);
+          model.setAlive(cell, true);
         });
 
         birthList = [];
@@ -99,7 +99,7 @@ define(['jquery', 'app/div-renderer', 'jquery-ui'], function($, divrenderer) {
         });
 
         dyingList.forEach(function(cell) {
-          divrenderer.setAlive(cell, false);
+          model.setAlive(cell, false);
         });
 
         dyingList = [];
@@ -127,7 +127,7 @@ define(['jquery', 'app/div-renderer', 'jquery-ui'], function($, divrenderer) {
             $timing.text(output.toFixed(2));
           }
           $iterations.text(iterations.toString());
-          $lifecount.text('' + divrenderer.getNumberLiving());
+          $lifecount.text('' + model.getNumberLiving());
         }
         that.start = function() {
           timer = setInterval(tick, 1000); // report once per second
@@ -171,10 +171,14 @@ define(['jquery', 'app/div-renderer', 'jquery-ui'], function($, divrenderer) {
 
       // Constructor
       GoLGrid = function(doc, gridHeight, gridWidth, rows, cols) {
+        var callback = $.Callbacks();
+        
         $(".GoLGrid").css({"width": gridWidth, "height": gridHeight});
         $(".GoLGrid").resizable();
 
-        divrenderer.makeGrid(doc, rows, cols);
+        model.init(rows, cols, callback);
+        divrenderer.init(doc, rows, cols, model);
+        callback.add(divrenderer.cellChanged);
       },
 
       // Public functions *** follow example aMethod ***
@@ -208,7 +212,7 @@ define(['jquery', 'app/div-renderer', 'jquery-ui'], function($, divrenderer) {
   };
 
   GoLGrid.prototype.clear = function() {
-    divrenderer.clearLiving();
+    model.clearLiving();
   };
 
   $(function() {
