@@ -39,22 +39,26 @@
   user-select: none;
 }
 
-.background-grid .GoLRow:nth-of-type(2n+1) .GoLCell:nth-of-type(2n),
-.background-grid .GoLRow:nth-of-type(2n) .GoLCell:nth-of-type(2n+1) {
-	background-color: lavender;
+.background-grid {
+  .GoLRow:nth-of-type(2n+1) .GoLCell:nth-of-type(2n),
+  .GoLRow:nth-of-type(2n) .GoLCell:nth-of-type(2n+1) {
+	  background-color: lavender;
+  }
 }
 
+.foreground-grid {
 
-.foreground-grid .GoLRow .GoLCell.prenatal {
+  .GoLRow .GoLCell.prenatal {
     background-color: gray;
-}
+  }
 
-.foreground-grid  .GoLRow .alive {
-    background-color: black;
-}
+  .GoLRow .alive {
+      background-color: black;
+  }
 
-.foreground-grid  .GoLRow .alive.prenatal {
-    background-color: gray;
+  .GoLRow .alive.prenatal {
+      background-color: gray;
+  }
 }
 
 .container{
