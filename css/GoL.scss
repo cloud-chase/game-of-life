@@ -70,7 +70,25 @@
   -moz-box-sizing: border-box;    /* Firefox, other Gecko */
   box-sizing: border-box;
 }
-.col {
+.left {
+  float: left;
+}
+.right {
+  float: right;
+}
+.fix {
+  height: 20px;
+  overflow: hidden;
+}
+.split-2 {
   display: inline-block;
-  width: 30%;
+  width: 49%;
+}
+.split-2-5 {
+  display: inline-block;
+  width: 39%;
+}
+.split-3-5 {
+  display: inline-block;
+  width: 59%;
 }

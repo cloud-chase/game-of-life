@@ -1,5 +1,5 @@
 define(['jquery', 'app/GoL-model', 'app/div-renderer', 'jquery-ui'], function($, model, divrenderer) {
-  
+
   var possibleList=[],
       dyingList=[],
       birthList=[],
@@ -66,7 +66,7 @@ define(['jquery', 'app/GoL-model', 'app/div-renderer', 'jquery-ui'], function($,
           checkGoLCellState(cell,
             function(sum, cell) { // handleSum
               if ( (sum === 3) ||
-                   ((extraBirthsRate > 0) && (Math.random() < extraBirthsRate)) || 
+                   ((extraBirthsRate > 0) && (Math.random() < extraBirthsRate)) ||
                    ((cell.data.fertilityRate > 0) && (Math.random() < cell.data.fertilityRate)) ) {
                 birthList.push(cell);
                 cell.data.fertilityRate = 0; // reset
@@ -81,7 +81,7 @@ define(['jquery', 'app/GoL-model', 'app/div-renderer', 'jquery-ui'], function($,
         });
 
         possibleList.length = 0;
-        
+
         model.setAlive(birthList, true);
         birthList.length = 0;
 
@@ -91,27 +91,32 @@ define(['jquery', 'app/GoL-model', 'app/div-renderer', 'jquery-ui'], function($,
 
       golStatusMgr = function() {
         var timer = 0,
-          lastTime = [],
+          iterationTimes = [],
+          firstTime = 0,
+          lastTime = 0,
           tick = 0,
           $timing,
           $iterations,
           $lifecount,
+          $timingAverage
           that = {};
 
         $timing = $("#timing-value");
+        $timingAverage = $("#timing-average");
         $iterations = $("#iterations");
         $lifecount = $("#life-count");
 
         tick = function() {
-          var count = lastTime.length;
+          var count = iterationTimes.length;
           var output;
           if (count > 0) {
-            output = lastTime.reduce(function(a,b) { return a + b; }) / count;
-            lastTime = [];
+            output = iterationTimes.reduce(function(a,b) { return a + b; }) / count;
+            iterationTimes = [];
             $timing.text(output.toFixed(2));
           }
-          $iterations.text(iterations.toString());
+          $iterations.text('' + iterations);
           $lifecount.text('' + model.getNumberLiving());
+          $timingAverage.text(((lastTime - firstTime) / iterations).toFixed(2));
         }
         that.start = function() {
           timer = setInterval(tick, 1000); // report once per second
@@ -120,12 +125,16 @@ define(['jquery', 'app/GoL-model', 'app/div-renderer', 'jquery-ui'], function($,
           clearInterval(timer);
         };
         that.golTiming = function(t) {
-          lastTime.push(t);
+          if (0 === firstTime) {
+            firstTime = t;
+          } else {
+            iterationTimes.push(t - lastTime);
+          }
+          lastTime = t;
         };
         return that;
       },
 
-      lastTime = 0,
       goLStep = function()
       {
         var d, thisTime,
@@ -133,16 +142,13 @@ define(['jquery', 'app/GoL-model', 'app/div-renderer', 'jquery-ui'], function($,
           thisTime = d.getTime(); // milliseconds since 01/01 1970
 
         iterations += 1;
-        if (lastTime !== 0) {
-          golStatus.golTiming(thisTime-lastTime);
-        }
-        lastTime = thisTime;
+        golStatus.golTiming(thisTime);
 
         checkGoLCellStates(
           function(sum, cell) { // handleSum
             if ( (sum < 2) ||
                  (sum > 3) ||
-                 ((extraDeathsRate > 0) && (Math.random() < extraDeathsRate)) || 
+                 ((extraDeathsRate > 0) && (Math.random() < extraDeathsRate)) ||
                  ((cell.data.deathRate > 0) && (Math.random() < cell.data.deathRate)) ) {
               dyingList.push(cell);
               cell.data.fertilityRate = 0; // reset
@@ -159,7 +165,7 @@ define(['jquery', 'app/GoL-model', 'app/div-renderer', 'jquery-ui'], function($,
       // Constructor
       GoLGrid = function(doc, gridHeight, gridWidth, rows, cols) {
         var callback = $.Callbacks();
-        
+
         $(".GoLGrid").css({"width": gridWidth, "height": gridHeight});
         $(".GoLGrid").resizable();
 

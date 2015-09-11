@@ -9,49 +9,52 @@
 	</div>
 <br>
 <div class="container">
-	<div>
-		<span class="col" id="activeCell">Active Cell: </span>
+	<div class='split-2-5 left'>
+		<div>
+			<span class="split-2 left fix" id="activeCell">Active Cell: </span>
+			<span class="split-2 right fix" id="status">Status: Stopped</span>
+			<span class="split-2 left fix" id="">Actual Timing: <span id="timing-value"></span>ms</span>
+			<span class="split-2 right fix" id="">Average Timing: <span id="timing-average"></span>ms</span>
+		</div>
+		<div>
+			<span class="split-2">
+				Interval(ms): <input type="text" id="txtInterval" value="20"/>
+				<input id="startStopBtn" type="button" value="Start" onclick="g.startStop()"/>
+				<input id="clearBtn" type="button" value="Clear" onclick="g.clear()"/>
+			</span>
+			<span class="split-2">Select a shape:
+				<select id="shape">
+					<option value="0">Dot</option>
+					<option value="1">Glider</option>
+					<option value="2">Lightwieght Spaceship</option>
+					<option value="3">Acorn</option>
+					<option value="4">Pentadecathlon</option>
+					<option value="5">Pulsar</option>
+				</select>
+			</span>
+		</div>
+	</div>
+	<div class='split-3-5 right'>
 		<span id="extraBirthsDeaths">
-			<span class="col">
+			<span class="split-2">
 				Extra random births on test (per 1000): <input type="text" id="extraBirthsPerThousand" value="0"/>
 			</span>
-			<span class="col">
+			<span class="split-2">
 				Extra random deaths on test (per 1000): <input type="text" id="extraDeathsPerThoursand" value="0"/>
 			</span>
 		</span>
-	</div>
-	<div>
-		<span class="col" id="status">Status: Stopped</span>
 		<span id="cellFertility">
-			<span class="col">
+			<span class="split-2">
 				Increase births on test (per 1000): <input type="text" id="increaseFertilityPerThousand" value="0" />
 			</span>
-			<span class="col">
+			<span class="split-2">
 				Increase deaths on test (per 1000): <input type="text" id="increaseDeathPerThousand" value="0" />
 			</span>
 		</span>
-	</div>
-	<div>
-		<span class="col" id="">Actual Timing: <span id="timing-value"></span>ms</span>
-		<span class="col" id="">Iterations: <span id="iterations"></span></span>
-		<span class="col" id="">Life: <span id="life-count"></span></span>
-	</div>
-	<div>
-		<span class="col">
-			Interval(ms): <input type="text" id="txtInterval" value="20"/>
-			<input id="startStopBtn" type="button" value="Start" onclick="g.startStop()"/>
-			<input id="clearBtn" type="button" value="Clear" onclick="g.clear()"/>
-		</span>
-		<span class="col">Select a shape:
-			<select id="shape">
-				<option value="0">Dot</option>
-				<option value="1">Glider</option>
-				<option value="2">Lightwieght Spaceship</option>
-				<option value="3">Acorn</option>
-				<option value="4">Pentadecathlon</option>
-				<option value="5">Pulsar</option>
-			</select>
-		</span>
+		<div>
+			<span class="split-2" id="">Iterations: <span id="iterations"></span></span>
+			<span class="split-2" id="">Life: <span id="life-count"></span></span>
+		</div>
 	</div>
 </div>
 </body>
