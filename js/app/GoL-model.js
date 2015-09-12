@@ -2,132 +2,117 @@ define(function() {
 
   var gridHeight = 0,
       gridWidth = 0,
-      cellRefs = [],
       living = [],
       callback = undefined,
-
-      addLiving = function(cell) {
-        if (cell.length !== undefined) {
-          cell.forEach(addLiving);
-        } else if (!cell.alive) {
-          living.push(cell);
-          cell.alive = true;
-          callback.fire(cell);
+      
+      addLiving = function(cells) {
+        for (var i in cells) {
+          getCell(cells[i]);
+          if (!cells[i][2]) {
+            cells[i][2] = (living[cells[i][0]] || (living[cells[i][0]] = []))[cells[i][1]] = true;
+            callback.fire(cells[i]);
+          }
         }
       },
 
-      removeLiving = function(cell) {
-        if (cell.length !== undefined) {
-          cell.forEach(removeLiving);
-        } else if (cell.alive) {
-          living.splice(living.indexOf(cell), 1);
-          cell.alive = false;
-          callback.fire(cell);
+      removeLiving = function(cells) {
+        for (var i in cells) {
+          getCell(cells[i]);
+          if (cells[i][2]) {
+            delete living[cells[i][0]][cells[i][1]];
+            if (living[cells[i][0]].length === 0) {
+              delete living[cells[i][0]];
+            }
+            cells[i][2] = false;
+            callback.fire(cells[i]);
+          }
         }
-      }, 
-
+      },
+      
       /**
         Initialise the model. The number of rows and columns are supplied,
         along with a 'callback' object which must have a 'fire' method on it
         which will be called every time a cell changes state with the cell
-        being passed as the only argument.
+        [row, column, alive] being passed as the only argument.
       */
       init = function(rows, cols, cellcallback) {
         gridHeight = rows;
         gridWidth = cols;
-        cellRefs = [];
         living = [];
         callback = cellcallback;
       },
 
       /**
-        Get the cell object at the specified row/column position in the grid.
-        The cell object contains fields 'row', 'column' and 'alive', containing
-        the row and column positions of the cell and true/false according to
-        the current living state of the cell. These fields should not be
-        modified by the client, and no other fields in the object should be
-        modified or accessed by the client except for the field 'data' which
-        all cells have, which is initially an empty object, and which is
-        entirely for the client's own use.
+        Update a cell [row, column, alive], ensuring the row and column are
+        normalised for any wrapping that is being applied, and setting the 
+        third element to the the current living state.
       */
-      getCell = function(row, col) {
-        var r = (row % gridHeight + gridHeight) % gridHeight,
-            c = (col % gridWidth + gridWidth) % gridWidth;
-        
-        if (!cellRefs[r]) {
-          cellRefs[r] = [];
-        }
-        
-        if (!cellRefs[r][c]) {
-          cellRefs[r][c] = {
-            row: r,
-            col: c,
-            alive: false,
-            data: {}
-          };
-        }
-        
-        return cellRefs[r][c];
+      getCell = function(cell) {
+        cell[0] = (cell[0] % gridHeight + gridHeight) % gridHeight;
+        cell[1] = (cell[1] % gridWidth + gridWidth) % gridWidth;
+        cell[2] = living[cell[0]] && living[cell[0]][cell[1]];
+        return cell;
       },
-      
+
       /**
         Call the specified handler function once for each cell that is
-        currently living, with the cell being passed as the only argument.
-        The cells are supplied in no significant order.
+        currently living, with the cell [row, column, alive] being passed as
+        the only argument. The cells are supplied in no significant order.
       */
       forEachLiving = function(handler) {
-        living.forEach(handler);
+        var r, c;
+        for (r in living) {
+          for (c in living[r]) {
+            handler([+r, +c, true]);
+          }
+        }
       },
       
       /**
         Return the number of cells currently living.
       */
       getNumberLiving = function() {
-        return living.length;
+        var r, c, result = 0;
+        for (r in living) {
+          for (c in living[r]) {
+            result++;
+          }
+        }
+        return result;
       },
       
       /**
         Return all cells to the not living state.
       */
       clearLiving = function() {
-        while (living.length > 0) {
-          removeLiving(living[0]);
-        }
+        var cells = [];
+        forEachLiving(function(cell) { cells.push(cell); });
+        removeLiving(cells);
       },
 
       /**
-        Set the state of a cell to living or not living, or the states of
-        all cells in an array to living or not living.
+        Set the state of all cells in an array, which must each be an array
+        [row, column, any-value] (the third element of each will be set to
+        match the alive parameter during the call) to living or not living.
       */
-      setAlive = function(cell, alive) {
-        alive ? addLiving(cell) : removeLiving(cell);
+      setAlive = function(cells, alive) {
+        alive ? addLiving(cells) : removeLiving(cells);
       },
 
       /**
         Return all the neighbours of a cell in an array.
       */
       getCellNeighbours = function(cell) {
-        var result = cell.neighbours;
-
-        if (!result) {
-          var r = Number($(cell).attr('row')),
-              c = Number($(cell).attr('col'));
-
-          result = [
-            getCell(r-1, c-1),
-            getCell(r-1, c),
-            getCell(r-1, c+1),
-            getCell(r, c-1),
-            getCell(r, c+1),
-            getCell(r+1, c-1),
-            getCell(r+1, c),
-            getCell(r+1, c+1)
-          ];
-
-          cell.neighbours = result;
-        }
-
-        return result;
+        return [
+          getCell([cell[0] - 1, cell[1] - 1, false]),
+          getCell([cell[0] - 1, cell[1], false]),
+          getCell([cell[0] - 1, cell[1] + 1, false]),
+          getCell([cell[0], cell[1] - 1, false]),
+          getCell([cell[0], cell[1] + 1, false]),
+          getCell([cell[0] + 1, cell[1] - 1, false]),
+          getCell([cell[0] + 1, cell[1], false]),
+          getCell([cell[0] + 1, cell[1] + 1, false])
+        ];
       };
 
   return {

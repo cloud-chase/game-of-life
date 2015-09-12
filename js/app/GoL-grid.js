@@ -1,6 +1,6 @@
 define(['jquery', 'app/GoL-model', 'app/div-renderer', 'jquery-ui'], function($, model, divrenderer) {
 
-  var possibleList=[],
+  var possibleBirths=[],
       dyingList=[],
       birthList=[],
       golStatus = {},
@@ -8,6 +8,7 @@ define(['jquery', 'app/GoL-model', 'app/div-renderer', 'jquery-ui'], function($,
       extraDeathsRate = 0,
       increaseFertilityRate = 0,
       increaseDeathRate = 0,
+      data = [],
       iterations = 0,
 
       shapes = [
@@ -33,54 +34,61 @@ define(['jquery', 'app/GoL-model', 'app/div-renderer', 'jquery-ui'], function($,
          [10,10],[12,0],[12,1],[12,2],[12,6],[12,7],[12,8]]
       ],
 
-      checkGoLCellState = function(cell, handleSum, handleAdjacent) {
+      checkGoLCellState = function(cell) {
         // Individual cell processor
         var n = model.getCellNeighbours(cell),// adjacent
-          sum,
-          i;
+            sum = 0, i;
 
-        sum = 0;
-        for (i = 0; i < n.length; i++) {
-          if (!n[i].alive) { // always checking alive state here
-            handleAdjacent(n[i]);
-          } else {
+        for (i in n) {
+          if (n[i][2]) {
             sum += 1;
+          } else if (cell[2]) {  // only consider neighbours of live cells as possible births
+            (possibleBirths[n[i][0]] || (possibleBirths[n[i][0]] = []))[n[i][1]] = true;
           }
         }
-        handleSum(sum, cell);
+        
+        return sum;
       },
 
-      checkGoLCellStates = function(handleSum, handleAdjacent) {
-        // process living cells
+      checkGoLCellStates = function() {
+        var r, c, pcell, livens;
+        
+        // process living cells to see if they might be deaths
         model.forEachLiving(function(cell) {
-          // select just living cells, keep processing to a minimum (efficient?)
-          checkGoLCellState(cell, handleSum, handleAdjacent);
+          celldata = data[cell[0]][cell[1]];
+          livens = checkGoLCellState(cell);
+          
+          if ( (livens < 2) ||
+               (livens > 3) ||
+               ((extraDeathsRate > 0) && (Math.random() < extraDeathsRate)) ||
+               ((celldata.deathRate > 0) && (Math.random() < celldata.deathRate)) ) {
+            dyingList.push(cell);
+            celldata.fertilityRate = 0; // reset
+            celldata.deathRate = 0;
+          } else if (increaseDeathRate > 0) {
+            celldata.deathRate += increaseDeathRate;
+          }
         });
 
-        // filter duplicates
-        possibleList = possibleList.filter(function(elem, pos, arr) {
-          return arr.indexOf(elem) === pos;
-        })
-        // process adjacent **********
-        possibleList.forEach(function(cell) {
-          checkGoLCellState(cell,
-            function(sum, cell) { // handleSum
-              if ( (sum === 3) ||
-                   ((extraBirthsRate > 0) && (Math.random() < extraBirthsRate)) ||
-                   ((cell.data.fertilityRate > 0) && (Math.random() < cell.data.fertilityRate)) ) {
-                birthList.push(cell);
-                cell.data.fertilityRate = 0; // reset
-                cell.data.deathRate = 0;
-              } else if (increaseFertilityRate > 0) {
-                cell.data.fertilityRate = (cell.data.fertilityRate || 0) + increaseFertilityRate;
-              }
-            }, function() { // handleAdjacents
-              // do nothing. adjacent of possible not added to possible
+        // process adjacent cells to see if they might be births
+        for (r in possibleBirths) {
+          for (c in possibleBirths[r]) {
+            pcell = [+r, +c, false];
+            celldata = data[+r][+c];            
+            livens = checkGoLCellState(pcell);
+            
+            if ( (livens === 3) ||
+                 ((extraBirthsRate > 0) && (Math.random() < extraBirthsRate)) ||
+                 ((celldata.fertilityRate > 0) && (Math.random() < celldata.fertilityRate)) ) {
+              birthList.push(pcell);
+              celldata.fertilityRate = 0; // reset
+              celldata.deathRate = 0;
+            } else if (increaseFertilityRate > 0) {
+              celldata.fertilityRate += increaseFertilityRate;
             }
-          );
-        });
-
-        possibleList.length = 0;
+          }
+          delete possibleBirths[r];
+        }
 
         model.setAlive(birthList, true);
         birthList.length = 0;
@@ -144,27 +152,12 @@ define(['jquery', 'app/GoL-model', 'app/div-renderer', 'jquery-ui'], function($,
         iterations += 1;
         golStatus.golTiming(thisTime);
 
-        checkGoLCellStates(
-          function(sum, cell) { // handleSum
-            if ( (sum < 2) ||
-                 (sum > 3) ||
-                 ((extraDeathsRate > 0) && (Math.random() < extraDeathsRate)) ||
-                 ((cell.data.deathRate > 0) && (Math.random() < cell.data.deathRate)) ) {
-              dyingList.push(cell);
-              cell.data.fertilityRate = 0; // reset
-              cell.data.deathRate = 0;
-            } else if (increaseDeathRate > 0) {
-              cell.data.deathRate = (cell.data.deathRate || 0) + increaseDeathRate;
-            }
-          }, function(cell) { // handleAdjacents
-            possibleList.push(cell);
-          }
-        );
+        checkGoLCellStates();
       },
 
       // Constructor
       GoLGrid = function(doc, gridHeight, gridWidth, rows, cols) {
-        var callback = $.Callbacks();
+        var r, c, callback = $.Callbacks();
 
         $(".GoLGrid").css({"width": gridWidth, "height": gridHeight});
         $(".GoLGrid").resizable();
@@ -172,6 +165,15 @@ define(['jquery', 'app/GoL-model', 'app/div-renderer', 'jquery-ui'], function($,
         model.init(rows, cols, callback);
         divrenderer.init(doc, rows, cols, model);
         callback.add(divrenderer.cellChanged);
+        
+        for (r = 0; r < rows; r++) {
+          data[r] = [];
+          for (c = 0; c < cols; c++) {
+            data[r][c] = { fertilityRate: 0, deathRate: 0 };
+          }
+        }
+        
+        model.setAlive([[44, 80], [45, 79], [45, 81], [46, 80]], true);
       },
 
       // Public functions *** follow example aMethod ***
