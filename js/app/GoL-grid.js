@@ -1,4 +1,4 @@
-define(['jquery', 'app/GoL-model', 'app/div-renderer', 'jquery-ui'], function($, model, divrenderer) {
+define(['jquery', 'app/GoL-model', 'app/GoL-canvas-renderer', 'jquery-ui'], function($, model, divrenderer) {
 
   var possibleBirths=[],
       dyingList=[],
@@ -173,7 +173,9 @@ define(['jquery', 'app/GoL-model', 'app/div-renderer', 'jquery-ui'], function($,
           }
         }
         
-        model.setAlive([[44, 80], [45, 79], [45, 81], [46, 80]], true);
+        r = Math.floor(rows / 2);
+        c = Math.floor(cols / 2);
+        model.setAlive([[r - 1, c], [r, c - 1], [r, c + 1], [r + 1, c]], true);
       },
 
       // Public functions *** follow example aMethod ***
