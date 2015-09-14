@@ -2,6 +2,7 @@ define(function() {
 
   // this is the renderer code, separated from the game function code
   var cursorShape = [[0,0]],
+      divs = [],
 
       /**
         Initialise the renderer. The HTML document is supplied, and the rows
@@ -28,6 +29,7 @@ define(function() {
           background_row = addDivTo(doc, background_grid, 'GoLRow block','');
           row = addDivTo(doc, foreground_grid, "GoLRow block", "r" + r.toString());
           row.visible = true;
+          divs[r] = [];
 
           for (var c = 0; c < cols; c++) {
             addDivTo(doc, background_row, 'GoLCell block','');
@@ -36,7 +38,7 @@ define(function() {
             cell.setAttribute('row', r); // chose this to keep jquery in thie file to minimum
             cell.setAttribute('col', c); // javascript dom
 
-            model.getCell(r, c).data.div = $(cell);
+            divs[r][c] = $(cell);
           }
         }
 
@@ -45,17 +47,18 @@ define(function() {
 
         var mouseDown = false,
             toggleShapeInner = function(cell, toggleClass, forceOff) {
-              if (forceOff || cell.data.div.hasClass(toggleClass)) {
+              var div = divs[cell[0]][cell[1]];
+              if (forceOff || div.hasClass(toggleClass)) {
                 if (toggleClass === 'alive') {
-                  model.setAlive(cell, false);
+                  model.setAlive([cell], false);
                 } else {
-                  cell.data.div.removeClass(toggleClass);
+                  div.removeClass(toggleClass);
                 }
               } else {
                 if (toggleClass === 'alive') {
-                  model.setAlive(cell, true);
+                  model.setAlive([cell], true);
                 } else {
-                  cell.data.div.addClass(toggleClass);
+                  div.addClass(toggleClass);
                 }
               }
             },
@@ -65,9 +68,8 @@ define(function() {
                   c = Number($cellDiv.attr('col')),
                   cell;
 
-              for (var i = 0; i < shape.length; i++) {
-                cell = model.getCell(r + shape[i][0], c + shape[i][1]);
-                cell && toggleShapeInner(cell, toggleClass, forceOff);
+              for (var i in shape) {
+                toggleShapeInner(model.getCell([r + shape[i][0], c + shape[i][1], false]), toggleClass, forceOff);
               }
             };
 
@@ -100,12 +102,12 @@ define(function() {
       },
 
       /**
-        Register the change of state of a cell. This method should be called
-        every time the state of a cell in the model changes, to enable the
-        renderer to reflect the current state of all cells in the model.
+        Register the change of state of a cell [row, column, alive]. This
+        method should be called every time the state of a cell changes, to
+        enable the renderer to reflect the current state of all cells.
       */
       cellChanged = function(cell) {
-        cell.data.div.toggleClass('alive', cell.alive);
+        divs[cell[0]][cell[1]].toggleClass('alive', cell[2]);
       },
 
       /**
