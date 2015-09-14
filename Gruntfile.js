@@ -44,6 +44,63 @@ module.exports = function(grunt) {
     }
   });
 
+  parseLif = function(filedata, catagory, name) {
+    var lineRegx = /^[^#](.*)$/gm;
+    var lifSegRegx = /([0-9]*)([bo])/g;
+    var x = 0,
+      y = 0,
+      rule = 0,
+      header,
+      headparts,
+      val,
+      shape = '';
+
+    while ((match = lineRegx.exec(filedata)) !== null) {
+      // first line should contain header
+      if (x === 0) {
+        header = match[0].split(',');
+        for (i = 0; i < header.length; i++) {
+          headparts = header[i].split('=');
+          switch(headparts[0].trim().toLowerCase()) {
+            case 'x':
+              x = parseInt(headparts[1]);
+              break;
+            case 'y':
+              y = parseInt(headparts[1]);
+              break;
+            case 'rule':
+              rule = headparts[1].trim();
+              break;
+          }
+        }
+      } else {
+        shape += match[0];
+      }
+    }
+
+    return {
+      catagory: catagory,
+      name: name,
+      width: x,
+      height: y,
+      rule: rule,
+      shape: shape
+    };
+  },
+
+  parsedShapes = [],
+  parseLifs = function(abspath, rootdir, subdir, filename) {
+    var ext = filename.substring(filename.length - 3).toLowerCase();
+    if (ext === 'lif') {
+      parsedShapes.push(parseLif(grunt.file.read(abspath), subdir, filename.substring(1, filename.length - 4)));
+    }
+  };
+  if (grunt.file.exists('shapes.json')) {
+    grunt.file.delete('shapes.json');
+  }
+  grunt.file.recurse('shapes/jslife', parseLifs);
+  grunt.file.write('shapes.json', JSON.stringify(parsedShapes));
+
   // Load the plugins
   grunt.loadNpmTasks('grunt-contrib-sass');
   //grunt.loadNpmTasks('grunt-contrib-uglify');
