@@ -78,7 +78,7 @@ define(function() {
           mouseDown = true;
         });
 
-        $('.foreground-grid .GoLCell').mouseup(function() {
+        $(document).mouseup(function() {
           mouseDown = false;
         });
 
