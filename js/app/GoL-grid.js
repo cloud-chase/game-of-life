@@ -12,27 +12,74 @@ define(['jquery', 'app/GoL-model', 'app/GoL-canvas-renderer', 'jquery-ui'], func
       iterations = 0,
 
       shapes = [
-        // default
-        [[0,0]],
+        { catagory: 'default', name: 'dot', width: '1', height: '1', rule: 'B3/S23', shape: 'o!'},
 
         // glider
-        [[0,0],[0,1],[0,2],[1,2],[2,1]],
+        { catagory: 'default', name: 'glider', width: '3', height: '3', shape: '3o$2bo$bo!'},
 
         // lightweightSpaceship
-        [[0,0],[0,3],[1,4],[2,0],[2,4],[3,1],[3,2],[3,3],[3,4]],
+        { catagory: 'default', name: 'lightweightSpaceship', width: '4', height: '4', shape: 'o2bo$4bo$o3bo$b4o!'},
+//        [[0,0],[0,3],[1,4],[2,0],[2,4],[3,1],[3,2],[3,3],[3,4]],
 
         // acorn
-        [[0,0],[1,2],[2,-1],[2,0],[2,3],[2,4],[2,5]],
+        { catagory: 'default', name: 'acorn', width: '7', height: '3', shape: 'bo$3bo$2o2b3o!'},
+//        [[0,1],[1,3],[2,0],[2,1],[2,4],[2,5],[2,6]],
 
         // pentadecathlon
-        [[0,0],[0,1],[-1,2],[1,2],[0,3],[0,4],[0,5],[0,6],[-1,7],[1,7],[0,8],[0,9]],
+        { catagory: 'default', name: 'pentadecathlon', width: '4', height: '4', shape: '2bo4bo$2ob4ob2o$2bo4bo!'},
+//        [[1,0],[1,1],[0,2],[2,2],[1,3],[1,4],[1,5],[1,6],[0,7],[2,7],[1,8],[1,9]],
 
         // pulsar
-        [[0,0],[0,1],[0,2],[0,6],[0,7],[0,8],[2,-2],[2,3],[2,5],[2,10],[3,-2],[3,3],[3,5],[3,10],
-         [4,-2],[4,3],[4,5],[4,10],[5,0],[5,1],[5,2],[5,6],[5,7],[5,8],[7,0],[7,1],[7,2],[7,6],
-         [7,7],[7,8],[8,-2],[8,3],[8,5],[8,10],[9,-2],[9,3],[9,5],[9,10],[10,-2],[10,3],[10,5],
-         [10,10],[12,0],[12,1],[12,2],[12,6],[12,7],[12,8]]
+        { catagory: 'default', name: 'pulsar', width: '13', height: '13', shape: '2b3o3b3o$$o4bobo4bo$o4bobo4bo$o4bobo4bo$2b3o3b3o$$2b3o3b3o$$o4bobo4bo$o4bobo4bo$o4bobo4bo$$2b3o3b3o!'},
+        // [[0,0],[0,1],[0,2],[0,6],[0,7],[0,8],[2,-2],[2,3],[2,5],[2,10],[3,-2],[3,3],[3,5],[3,10],
+        //  [4,-2],[4,3],[4,5],[4,10],[5,0],[5,1],[5,2],[5,6],[5,7],[5,8],[7,0],[7,1],[7,2],[7,6],
+        //  [7,7],[7,8],[8,-2],[8,3],[8,5],[8,10],[9,-2],[9,3],[9,5],[9,10],[10,-2],[10,3],[10,5],
+        //  [10,10],[12,0],[12,1],[12,2],[12,6],[12,7],[12,8]]
       ],
+
+      processShapes = function() {
+        // convert lif encoding to array of living cells
+        shapes.forEach(function(item) {
+          var lines,
+            lineNo = 0,
+            cells = [],
+            match,
+            midx = Math.floor(item.width/2),
+            midy = Math.floor(item.height/2),
+            regx = /([0-9]*)([ob])/g;
+
+          lines = item.shape.split('$');
+          lines.forEach(function(line) {
+            var cell = [], pos = 0, len;
+            while ((match = regx.exec(line)) !== null) {
+              if (match[1] !== '') {
+                len = parseInt(match[1]);
+              } else {
+                len = 1;
+              }
+              if (match[2] === 'o') {
+                for (i = 0; i < len; i++) {
+                  cell.push(lineNo - midy);
+                  cell.push(i + pos - midx);
+                  cells.push(cell);
+                  cell = [];
+                }
+              }
+              pos += len;
+            }
+            lineNo += 1;
+          })
+          item.cells = cells;
+        });
+      },
+
+      initShapes = function(maxWidth, maxHeihgt) {
+        // $.getJSON('shapes.json', function(data) {
+        //   shapes.concat(data);
+        // });
+
+        processShapes();
+      },
 
       checkGoLCellState = function(cell) {
         // Individual cell processor
@@ -46,18 +93,18 @@ define(['jquery', 'app/GoL-model', 'app/GoL-canvas-renderer', 'jquery-ui'], func
             (possibleBirths[n[i][0]] || (possibleBirths[n[i][0]] = []))[n[i][1]] = true;
           }
         }
-        
+
         return sum;
       },
 
       checkGoLCellStates = function() {
         var r, c, pcell, livens;
-        
+
         // process living cells to see if they might be deaths
         model.forEachLiving(function(cell) {
           celldata = data[cell[0]] && data[cell[0]][cell[1]];
           livens = checkGoLCellState(cell);
-          
+
           if ( (livens < 2) ||
                (livens > 3) ||
                ((extraDeathsRate > 0) && (Math.random() < extraDeathsRate)) ||
@@ -78,7 +125,7 @@ define(['jquery', 'app/GoL-model', 'app/GoL-canvas-renderer', 'jquery-ui'], func
             pcell = [+r, +c, false];
             celldata = data[+r] && data[+r][+c];            
             livens = checkGoLCellState(pcell);
-            
+
             if ( (livens === 3) ||
                  ((extraBirthsRate > 0) && (Math.random() < extraBirthsRate)) ||
                  (celldata && (celldata.fertilityRate > 0) && (Math.random() < celldata.fertilityRate)) ) {
@@ -169,14 +216,14 @@ define(['jquery', 'app/GoL-model', 'app/GoL-canvas-renderer', 'jquery-ui'], func
         model.init(-1, -1, callback);
         divrenderer.init(doc, rows, cols, model);
         callback.add(divrenderer.cellChanged);
-        
+
         for (r = 0; r < rows; r++) {
           data[r] = [];
           for (c = 0; c < cols; c++) {
             data[r][c] = { fertilityRate: 0, deathRate: 0 };
           }
         }
-        
+
         r = Math.floor(rows / 2);
         c = Math.floor(cols / 2);
         model.setAlive([[r - 1, c], [r, c - 1], [r, c + 1], [r + 1, c]], true);
@@ -217,9 +264,16 @@ define(['jquery', 'app/GoL-model', 'app/GoL-canvas-renderer', 'jquery-ui'], func
   };
 
   $(function() {
+    var index = 0, $shapes = $('#shapes');
+
     golStatus = golStatusMgr();
-    $('#shape').on('change', function(e) {
-        divrenderer.setCursorShape(shapes[parseInt(this.value)]);
+    initShapes();
+    shapes.forEach(function(shape) {
+      $shapes.append($('<option></option>').val(index).html(shape.catagory + '/' + shape.name));
+      index += 1;
+    });
+    $shapes.on('change', function(e) {
+        divrenderer.setCursorShape(shapes[parseInt(this.value)].cells);
     });
   });
 

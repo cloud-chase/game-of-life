@@ -16,23 +16,23 @@ define(['jquery'], function($) {
         var $grid = $('#grid1'),
             canvas = doc.createElement("Canvas"),
             $canvas = $(canvas),
-        
+
             redraw = function() {
               var width = $grid.width(),
                   height = $grid.height(),
                   i;
-              
+
               // update and reset the canvas, in case dimensions have changed
               $canvas.attr('width', width);
               $canvas.attr('height', height);
-              
+
               context.clearRect(0, 0, width, height);
-              
+
               cellWidth = Math.floor(width / cols);
               cellHeight = Math.floor(height / rows);
               originX = Math.floor((width % cols) / 2);
               originY = Math.floor((height % rows) / 2);
-              
+
               // draw a grid
               context.strokeStyle = '#e6e6fa';
               context.lineWidth = 1;
@@ -41,26 +41,26 @@ define(['jquery'], function($) {
                 context.moveTo(originX + (i * cellWidth) - 0.5, originY - 0.5);
                 context.lineTo(originX + (i * cellWidth) - 0.5, originY + (rows * cellHeight) - 0.5);
               }
-              
+
               for (i = 0; i <= gridHeight; i++) {
                 context.moveTo(originX - 0.5, originY + (i * cellHeight) - 0.5);
                 context.lineTo(originX + (cols * cellWidth) - 0.5, originY + (i * cellHeight) - 0.5);
               }
-              
+
               context.stroke();
-              
+
               // draw the cell states
               model.forEachLiving(paintCell);
             };
-        
+
         $grid.append(canvas);
         context = canvas.getContext('2d');
         gridWidth = cols;
         gridHeight = rows;
-        
+
         redraw();
         $(window).resize(redraw);
-        
+
         var setCursor = function(event, forceoff) {
               // remove any current cursor
               cursorCells.forEach(function(cell) { paintCell(model.getCell(cell)); });
@@ -83,7 +83,7 @@ define(['jquery'], function($) {
                 $("#activeCell").text("Active Cell:");
               }
             },
-            
+
             mousedown = false;
 
         $('#grid1 canvas').mousedown(function(event) {
@@ -109,16 +109,16 @@ define(['jquery'], function($) {
           setCursor(event, true);
         });
       },
-      
+
       paintCell = function(cell, overridecolor) {
         context.fillStyle = overridecolor || (cell[2] ? '#000000' : '#ffffff');
-        context.fillRect(originX + (cell[1] * cellWidth), originY + (cell[0] * cellHeight), cellWidth - 1, cellHeight - 1);        
+        context.fillRect(originX + (cell[1] * cellWidth), originY + (cell[0] * cellHeight), cellWidth - 1, cellHeight - 1);
       },
 
       drawCursor = function() {
         cursorCells.forEach(function(cell) { paintCell(cell, '#808080'); });
       },
-      
+
       /**
         Register the change of state of a cell [row, column, alive]. This
         method should be called every time the state of a cell changes, to
