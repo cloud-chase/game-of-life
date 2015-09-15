@@ -1,30 +1,67 @@
 define(function() {
+  
+  /**
+    This provides a model for Conway's Game of Life, storing the state of a
+    grid of cells in a reasonably efficient way and providing various methods
+    to query the states, modify the states, and be notified of changes to the
+    states of cells in the grid.
+    
+    To minimise object overhead, this model represents and works with cells as
+    arrays of three elements, being the row number, column number, and status
+    of the cell (true=alive, false=dead). The total set of currently living
+    cells is held in a sparse 2D array.
+  */
 
   var gridHeight = 0,
       gridWidth = 0,
       living = [],
       callback = undefined,
       
+      /**
+        Add cells to the living set. The cells must be arrays of three
+        elements, containing the row and column as the first two elements.
+        The third element of each cell will be set to true during this method.
+      */
       addLiving = function(cells) {
-        for (var i in cells) {
-          getCell(cells[i]);
-          if (!cells[i][2]) {
-            cells[i][2] = (living[cells[i][0]] || (living[cells[i][0]] = []))[cells[i][1]] = true;
-            callback.fire(cells[i]);
+        var row, cell;
+        for (cell of cells) {
+          // normalise row and column indices and get current state
+          getCell(cell);
+          
+          // if the cell is not already alive, add it to the set and notify
+          if (!cell[2]) {
+            row = living[cell[0]];
+            if (!row) {
+              row = living[cell[0]] = [];
+              // include a non-enumerable 'count' property to keep track of entries
+              Object.defineProperty(row, 'count', { writable: true, value: 1 });
+            } else {
+              row.count++;
+            }
+            cell[2] = row[cell[1]] = true;
+            callback.fire(cell);
           }
         }
       },
 
+      /**
+        Remove cells from the living set. The cells must be arrays of three
+        elements, containing the row and column as the first two elements.
+        The third element of each cell will be set to false during this method.
+      */
       removeLiving = function(cells) {
-        for (var i in cells) {
-          getCell(cells[i]);
-          if (cells[i][2]) {
-            delete living[cells[i][0]][cells[i][1]];
-            if (living[cells[i][0]].length === 0) {
-              delete living[cells[i][0]];
+        for (var cell of cells) {
+          // normalise row and column indices and get current state
+          getCell(cell);
+          
+          // if the cell is currently alive, remove it from the set and notify
+          if (cell[2]) {
+            delete living[cell[0]][cell[1]];
+            if (--living[cell[0]].count === 0) {
+              delete living[cell[0]];
             }
-            cells[i][2] = false;
-            callback.fire(cells[i]);
+            cell[2] = false;
+            callback.fire(cell);
           }
         }
       },
@@ -38,7 +75,7 @@ define(function() {
       init = function(rows, cols, cellcallback) {
         gridHeight = rows;
         gridWidth = cols;
-        living = [];
+        living.length = 0;
         callback = cellcallback;
       },
 
