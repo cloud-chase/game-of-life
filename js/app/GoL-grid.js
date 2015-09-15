@@ -55,17 +55,19 @@ define(['jquery', 'app/GoL-model', 'app/GoL-canvas-renderer', 'jquery-ui'], func
         
         // process living cells to see if they might be deaths
         model.forEachLiving(function(cell) {
-          celldata = data[cell[0]][cell[1]];
+          celldata = data[cell[0]] && data[cell[0]][cell[1]];
           livens = checkGoLCellState(cell);
           
           if ( (livens < 2) ||
                (livens > 3) ||
                ((extraDeathsRate > 0) && (Math.random() < extraDeathsRate)) ||
-               ((celldata.deathRate > 0) && (Math.random() < celldata.deathRate)) ) {
+               (celldata && (celldata.deathRate > 0) && (Math.random() < celldata.deathRate)) ) {
             dyingList.push(cell);
-            celldata.fertilityRate = 0; // reset
-            celldata.deathRate = 0;
-          } else if (increaseDeathRate > 0) {
+            if (celldata) {
+              celldata.fertilityRate = 0; // reset
+              celldata.deathRate = 0;
+            }
+          } else if (celldata && (increaseDeathRate > 0)) {
             celldata.deathRate += increaseDeathRate;
           }
         });
@@ -74,16 +76,18 @@ define(['jquery', 'app/GoL-model', 'app/GoL-canvas-renderer', 'jquery-ui'], func
         for (r in possibleBirths) {
           for (c in possibleBirths[r]) {
             pcell = [+r, +c, false];
-            celldata = data[+r][+c];            
+            celldata = data[+r] && data[+r][+c];            
             livens = checkGoLCellState(pcell);
             
             if ( (livens === 3) ||
                  ((extraBirthsRate > 0) && (Math.random() < extraBirthsRate)) ||
-                 ((celldata.fertilityRate > 0) && (Math.random() < celldata.fertilityRate)) ) {
+                 (celldata && (celldata.fertilityRate > 0) && (Math.random() < celldata.fertilityRate)) ) {
               birthList.push(pcell);
-              celldata.fertilityRate = 0; // reset
-              celldata.deathRate = 0;
-            } else if (increaseFertilityRate > 0) {
+              if (celldata) {
+                celldata.fertilityRate = 0; // reset
+                celldata.deathRate = 0;
+              }
+            } else if (celldata && (increaseFertilityRate > 0)) {
               celldata.fertilityRate += increaseFertilityRate;
             }
           }
@@ -162,7 +166,7 @@ define(['jquery', 'app/GoL-model', 'app/GoL-canvas-renderer', 'jquery-ui'], func
         $(".GoLGrid").css({"width": gridWidth, "height": gridHeight});
         $(".GoLGrid").resizable();
 
-        model.init(rows, cols, callback);
+        model.init(-1, -1, callback);
         divrenderer.init(doc, rows, cols, model);
         callback.add(divrenderer.cellChanged);
         

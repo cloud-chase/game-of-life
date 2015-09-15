@@ -70,7 +70,9 @@ define(function() {
         Initialise the model. The number of rows and columns are supplied,
         along with a 'callback' object which must have a 'fire' method on it
         which will be called every time a cell changes state with the cell
-        [row, column, alive] being passed as the only argument.
+        [row, column, alive] being passed as the only argument. If the number
+        of rows is -1, the grid is infinitely high. If the number of columns
+        is -1, the grid is infinitely wide.
       */
       init = function(rows, cols, cellcallback) {
         gridHeight = rows;
@@ -85,8 +87,14 @@ define(function() {
         third element to the the current living state.
       */
       getCell = function(cell) {
-        cell[0] = (cell[0] % gridHeight + gridHeight) % gridHeight;
-        cell[1] = (cell[1] % gridWidth + gridWidth) % gridWidth;
+        if (gridHeight >= 0) {
+          cell[0] = (cell[0] % gridHeight + gridHeight) % gridHeight;
+        }
+        
+        if (gridWidth >= 0) {
+          cell[1] = (cell[1] % gridWidth + gridWidth) % gridWidth;
+        }
+        
         cell[2] = living[cell[0]] && living[cell[0]][cell[1]];
         return cell;
       },
