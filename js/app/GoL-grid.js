@@ -1,4 +1,4 @@
-define(['jquery', 'app/GoL-model', 'app/GoL-canvas-renderer', 'jquery-ui'], function($, model, divrenderer) {
+define(['jquery', 'app/GoL-model', 'app/GoL-canvas-renderer', 'app/GoL-shapes', 'jquery-ui'], function($, model, divrenderer, golshapes) {
 
   var possibleBirths=[],
       dyingList=[],
@@ -9,28 +9,30 @@ define(['jquery', 'app/GoL-model', 'app/GoL-canvas-renderer', 'jquery-ui'], func
       increaseFertilityRate = 0,
       increaseDeathRate = 0,
       data = [],
+      grid_rows = 0,
+      grid_cols = 0,
       iterations = 0,
 
       shapes = [
-        { catagory: 'default', name: 'dot', width: '1', height: '1', rule: 'B3/S23', shape: 'o!'},
+        { category: 'default', name: 'dot', width: '1', height: '1', rule: 'B3/S23', shape: 'o!'},
 
         // glider
-        { catagory: 'default', name: 'glider', width: '3', height: '3', shape: '3o$2bo$bo!'},
+        { category: 'default', name: 'glider', width: '3', height: '3', shape: '3o$2bo$bo!'},
 
         // lightweightSpaceship
-        { catagory: 'default', name: 'lightweightSpaceship', width: '4', height: '4', shape: 'o2bo$4bo$o3bo$b4o!'},
+        { category: 'default', name: 'lightweightSpaceship', width: '4', height: '4', shape: 'o2bo$4bo$o3bo$b4o!'},
 //        [[0,0],[0,3],[1,4],[2,0],[2,4],[3,1],[3,2],[3,3],[3,4]],
 
         // acorn
-        { catagory: 'default', name: 'acorn', width: '7', height: '3', shape: 'bo$3bo$2o2b3o!'},
+        { category: 'default', name: 'acorn', width: '7', height: '3', shape: 'bo$3bo$2o2b3o!'},
 //        [[0,1],[1,3],[2,0],[2,1],[2,4],[2,5],[2,6]],
 
         // pentadecathlon
-        { catagory: 'default', name: 'pentadecathlon', width: '4', height: '4', shape: '2bo4bo$2ob4ob2o$2bo4bo!'},
+        { category: 'default', name: 'pentadecathlon', width: '4', height: '4', shape: '2bo4bo$2ob4ob2o$2bo4bo!'},
 //        [[1,0],[1,1],[0,2],[2,2],[1,3],[1,4],[1,5],[1,6],[0,7],[2,7],[1,8],[1,9]],
 
         // pulsar
-        { catagory: 'default', name: 'pulsar', width: '13', height: '13', shape: '2b3o3b3o$$o4bobo4bo$o4bobo4bo$o4bobo4bo$2b3o3b3o$$2b3o3b3o$$o4bobo4bo$o4bobo4bo$o4bobo4bo$$2b3o3b3o!'},
+        { category: 'default', name: 'pulsar', width: '13', height: '13', shape: '2b3o3b3o$$o4bobo4bo$o4bobo4bo$o4bobo4bo$2b3o3b3o$$2b3o3b3o$o4bobo4bo$o4bobo4bo$o4bobo4bo$$2b3o3b3o!'},
         // [[0,0],[0,1],[0,2],[0,6],[0,7],[0,8],[2,-2],[2,3],[2,5],[2,10],[3,-2],[3,3],[3,5],[3,10],
         //  [4,-2],[4,3],[4,5],[4,10],[5,0],[5,1],[5,2],[5,6],[5,7],[5,8],[7,0],[7,1],[7,2],[7,6],
         //  [7,7],[7,8],[8,-2],[8,3],[8,5],[8,10],[9,-2],[9,3],[9,5],[9,10],[10,-2],[10,3],[10,5],
@@ -73,11 +75,11 @@ define(['jquery', 'app/GoL-model', 'app/GoL-canvas-renderer', 'jquery-ui'], func
         });
       },
 
-      initShapes = function(maxWidth, maxHeihgt) {
-        // $.getJSON('shapes.json', function(data) {
-        //   shapes.concat(data);
-        // });
-
+      initShapes = function(maxHeight, maxWidth) {
+        shapes = shapes.concat(golshapes);
+        shapes.filter(function(item) {
+          return item.width <= maxWidth && item.height <= maxHeight;
+        })
         processShapes();
       },
 
@@ -212,7 +214,8 @@ define(['jquery', 'app/GoL-model', 'app/GoL-canvas-renderer', 'jquery-ui'], func
 
         $(".GoLGrid").css({"width": gridWidth, "height": gridHeight});
         $(".GoLGrid").resizable();
-
+        grid_rows = rows;
+        grid_cols = cols;
         model.init(-1, -1, callback);
         divrenderer.init(doc, rows, cols, model);
         callback.add(divrenderer.cellChanged);
@@ -267,9 +270,9 @@ define(['jquery', 'app/GoL-model', 'app/GoL-canvas-renderer', 'jquery-ui'], func
     var index = 0, $shapes = $('#shapes');
 
     golStatus = golStatusMgr();
-    initShapes();
+    initShapes(grid_rows, grid_cols);
     shapes.forEach(function(shape) {
-      $shapes.append($('<option></option>').val(index).html(shape.catagory + '/' + shape.name));
+      $shapes.append($('<option></option>').val(index).html(shape.category + '/' + shape.name));
       index += 1;
     });
     $shapes.on('change', function(e) {

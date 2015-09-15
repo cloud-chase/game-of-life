@@ -6,45 +6,11 @@ module.exports = function(grunt) {
 
       sass_dependencies = 'css/**/*.scss',
       sass_to_compile = 'css/GoL.scss',
-      sass_compiled = 'css/GoL.css';
+      sass_compiled = 'css/GoL.css',
+      lif_shapes_to_compile = 'shapes/jslife',
+      lif_shapes_compiled = 'js/app/GoL-shapes.js',
 
-  grunt.initConfig({
-
-    // make our package meta-data available as fields in 'pkg'
-    pkg: grunt.file.readJSON('package.json'),
-
-    sass: {
-      build: {
-        src: sass_to_compile,
-        dest: sass_compiled
-      }
-    },
-
-    /*uglify: {
-      options: {
-        banner: '/' + '*! <%= pkg.name %> <%= grunt.template.today("yyyy-mm-dd") %> *' + '/\n'
-      },
-
-      custom: {
-        src: js_to_minify,
-        dest: js_minified
-      }
-    },*/
-
-    watch: {
-      sass_build: {
-        files: sass_dependencies,
-        tasks: 'sass:build'
-      },
-
-      /*js_build: {
-        files: js_dependencies,
-        tasks: 'uglify:custom'
-      }*/
-    }
-  });
-
-  parseLif = function(filedata, catagory, name) {
+  parseLif_inner = function(filedata, category, name) {
     var lineRegx = /^[^#](.*)$/gm;
     var lifSegRegx = /([0-9]*)([bo])/g;
     var x = 0,
@@ -79,7 +45,7 @@ module.exports = function(grunt) {
     }
 
     return {
-      catagory: catagory,
+      category: category,
       name: name,
       width: x,
       height: y,
@@ -88,26 +54,81 @@ module.exports = function(grunt) {
     };
   },
 
-  parsedShapes = [],
-  parseLifs = function(abspath, rootdir, subdir, filename) {
-    var ext = filename.substring(filename.length - 3).toLowerCase();
-    if (ext === 'lif') {
-      parsedShapes.push(parseLif(grunt.file.read(abspath), subdir, filename.substring(1, filename.length - 4)));
+  parseLifs = function() {
+    var parsedShapes = [],
+      compiled = this.data.dest,
+      toCompile = this.data.src,
+
+    parseLif = function(abspath, rootdir, subdir, filename) {
+      var ext = filename.substring(filename.length - 3).toLowerCase();
+      var shape;
+      if (ext === 'lif') {
+        shape = parseLif_inner(grunt.file.read(abspath), subdir, filename.substring(0, filename.length - 4));
+        if (shape.width < 200 && shape.height < 200) {
+          parsedShapes.push(shape);
+        }
+      }
+    };
+
+    if (grunt.file.exists(compiled)) {
+      grunt.file.delete(compiled);
     }
+    grunt.file.recurse(toCompile, parseLif);
+    grunt.file.write(compiled, '/* GENERATED FILE */define( function() { return' + JSON.stringify(parsedShapes) + '; });');
   };
-  if (grunt.file.exists('shapes.json')) {
-    grunt.file.delete('shapes.json');
-  }
-  grunt.file.recurse('shapes/jslife', parseLifs);
-  grunt.file.write('shapes.json', JSON.stringify(parsedShapes));
+
+  grunt.initConfig({
+
+    // make our package meta-data available as fields in 'pkg'
+    pkg: grunt.file.readJSON('package.json'),
+
+    sass: {
+      build: {
+        src: sass_to_compile,
+        dest: sass_compiled
+      }
+    },
+
+    /*uglify: {
+      options: {
+        banner: '/' + '*! <%= pkg.name %> <%= grunt.template.today("yyyy-mm-dd") %> *' + '/\n'
+      },
+
+      custom: {
+        src: js_to_minify,
+        dest: js_minified
+      }
+    },*/
+
+    shapes: {
+      build: {
+        src: lif_shapes_to_compile,
+        dest: lif_shapes_compiled
+      }
+    },
+
+    watch: {
+      sass_build: {
+        files: sass_dependencies,
+        tasks: 'sass:build'
+      },
+
+      /*js_build: {
+        files: js_dependencies,
+        tasks: 'uglify:custom'
+      }*/
+    }
+  });
 
   // Load the plugins
   grunt.loadNpmTasks('grunt-contrib-sass');
   //grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-watch');
 
-  // Define multi tasks
-  grunt.registerTask('build', [ 'sass:build'/*, 'uglify'*/ ]);
+  // Define tasks
+  grunt.registerMultiTask('shapes', parseLifs);
+
+  grunt.registerTask('build', [ 'sass:build'/*, 'uglify'*/, 'shapes:build' ]);
   grunt.registerTask('test', [ ]);
 
   grunt.registerTask('default', [ 'build', 'watch' ]);

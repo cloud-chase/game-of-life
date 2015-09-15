@@ -16,7 +16,7 @@ define(function() {
       gridWidth = 0,
       living = [],
       callback = undefined,
-      
+
       /**
         Add cells to the living set. The cells must be arrays of three
         elements, containing the row and column as the first two elements.
@@ -65,7 +65,7 @@ define(function() {
           }
         }
       },
-      
+
       /**
         Initialise the model. The number of rows and columns are supplied,
         along with a 'callback' object which must have a 'fire' method on it
@@ -83,7 +83,7 @@ define(function() {
 
       /**
         Update a cell [row, column, alive], ensuring the row and column are
-        normalised for any wrapping that is being applied, and setting the 
+        normalised for any wrapping that is being applied, and setting the
         third element to the the current living state.
       */
       getCell = function(cell) {
@@ -112,7 +112,7 @@ define(function() {
           }
         }
       },
-      
+
       /**
         Return the number of cells currently living.
       */
@@ -125,7 +125,7 @@ define(function() {
         }
         return result;
       },
-      
+
       /**
         Return all cells to the not living state.
       */
@@ -169,5 +169,5 @@ define(function() {
     setAlive: setAlive,
     getCellNeighbours: getCellNeighbours
   };
-  
+
 });
