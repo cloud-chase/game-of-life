@@ -2,6 +2,7 @@ define(['jquery'], function($) {
 
   var cursorShape = [[0,0]],
       cursorCells = [],
+      gridWidth, gridHeight,
       cellWidth, cellHeight,
       originX, originY,
       context,
@@ -111,8 +112,10 @@ define(['jquery'], function($) {
       },
 
       paintCell = function(cell, overridecolor) {
-        context.fillStyle = overridecolor || (cell[2] ? '#000000' : '#ffffff');
-        context.fillRect(originX + (cell[1] * cellWidth), originY + (cell[0] * cellHeight), cellWidth - 1, cellHeight - 1);
+        if ((cell[0] >= 0) && (cell[1] >= 0) && (cell[0] < gridHeight) && (cell[1] < gridWidth)) {
+          context.fillStyle = overridecolor || (cell[2] ? '#000000' : '#ffffff');
+          context.fillRect(originX + (cell[1] * cellWidth), originY + (cell[0] * cellHeight), cellWidth - 1, cellHeight - 1);
+        }
       },
 
       drawCursor = function() {
