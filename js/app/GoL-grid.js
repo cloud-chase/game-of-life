@@ -316,6 +316,7 @@ define(['jquery', 'app/GoL-model', 'app/GoL-shapes', 'app/renderers', 'jquery-ui
       require([this.value], function(r) {
         renderer = r;
         renderer.init(the_doc, grid_rows, grid_cols, model);
+        renderer.setCursorShape(shapes[parseInt($('#shapes').val())].cells);
         callback.add(renderer.cellChanged);
       });
     });
