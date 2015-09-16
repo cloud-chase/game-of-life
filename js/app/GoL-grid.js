@@ -125,7 +125,7 @@ define(['jquery', 'app/GoL-model', 'app/GoL-canvas-renderer', 'app/GoL-shapes', 
         for (r in possibleBirths) {
           for (c in possibleBirths[r]) {
             pcell = [+r, +c, false];
-            celldata = data[+r] && data[+r][+c];            
+            celldata = data[+r] && data[+r][+c];
             livens = checkGoLCellState(pcell);
 
             if ( (livens === 3) ||
@@ -151,34 +151,40 @@ define(['jquery', 'app/GoL-model', 'app/GoL-canvas-renderer', 'app/GoL-shapes', 
       },
 
       golStatusMgr = function() {
-        var timer = 0,
-          iterationTimes = [],
-          firstTime = 0,
-          lastTime = 0,
-          tick = 0,
-          $timing,
-          $iterations,
-          $lifecount,
-          $timingAverage
-          that = {};
+        var timer,
+          iterationTimes,
+          firstTime,
+          lastTime,
+          that = {},
+          $timing = $("#timing-value"),
+          $timingAverage = $("#timing-average"),
+          $iterations = $("#iterations"),
+          $lifecount = $("#life-count"),
 
-        $timing = $("#timing-value");
-        $timingAverage = $("#timing-average");
-        $iterations = $("#iterations");
-        $lifecount = $("#life-count");
-
-        tick = function() {
-          var count = iterationTimes.length;
-          var output;
-          if (count > 0) {
-            output = iterationTimes.reduce(function(a,b) { return a + b; }) / count;
+          init = function() {
+            timer = 0;
             iterationTimes = [];
-            $timing.text(output.toFixed(2));
-          }
-          $iterations.text('' + iterations);
-          $lifecount.text('' + model.getNumberLiving());
-          $timingAverage.text(((lastTime - firstTime) / iterations).toFixed(2));
-        }
+            firstTime = 0;
+            lastTime = 0;
+            $timing.text('');
+            $timingAverage.text('');
+            $iterations.text('0');
+            $lifecount.text('0');
+          },
+
+          tick = function() {
+            var count = iterationTimes.length;
+            var output;
+            if (count > 0) {
+              output = iterationTimes.reduce(function(a,b) { return a + b; }) / count;
+              iterationTimes = [];
+              $timing.text(output.toFixed(2));
+            }
+            $iterations.text('' + iterations);
+            $lifecount.text('' + model.getNumberLiving());
+            $timingAverage.text(((lastTime - firstTime) / iterations).toFixed(2));
+          };
+
         that.start = function() {
           timer = setInterval(tick, 1000); // report once per second
         };
@@ -193,6 +199,11 @@ define(['jquery', 'app/GoL-model', 'app/GoL-canvas-renderer', 'app/GoL-shapes', 
           }
           lastTime = t;
         };
+        that.clear = function() {
+          init();
+          tick();
+        };
+        init();
         return that;
       },
 
@@ -264,6 +275,8 @@ define(['jquery', 'app/GoL-model', 'app/GoL-canvas-renderer', 'app/GoL-shapes', 
 
   GoLGrid.prototype.clear = function() {
     model.clearLiving();
+    iterations = 0;
+    golStatus.clear();
   };
 
   $(function() {
