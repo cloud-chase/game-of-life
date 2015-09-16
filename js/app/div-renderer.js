@@ -47,20 +47,22 @@ define(function() {
 
         var mouseDown = false,
             toggleShapeInner = function(cell, toggleClass, forceOff) {
-              var div = divs[cell[0]][cell[1]];
-              if (forceOff || div.hasClass(toggleClass)) {
-                if (toggleClass === 'alive') {
-                  model.setAlive([cell], false);
+              try {
+                var div = divs[cell[0]][cell[1]];
+                if (forceOff || div.hasClass(toggleClass)) {
+                  if (toggleClass === 'alive') {
+                    model.setAlive([cell], false);
+                  } else {
+                    div.removeClass(toggleClass);
+                  }
                 } else {
-                  div.removeClass(toggleClass);
+                  if (toggleClass === 'alive') {
+                    model.setAlive([cell], true);
+                  } else {
+                    div.addClass(toggleClass);
+                  }
                 }
-              } else {
-                if (toggleClass === 'alive') {
-                  model.setAlive([cell], true);
-                } else {
-                  div.addClass(toggleClass);
-                }
-              }
+              } catch (e) {}
             },
             toggleShape = function(cellDiv, shape, toggleClass, forceOff) {
               var $cellDiv = $(cellDiv),
@@ -107,7 +109,9 @@ define(function() {
         enable the renderer to reflect the current state of all cells.
       */
       cellChanged = function(cell) {
-        divs[cell[0]][cell[1]].toggleClass('alive', cell[2]);
+        try {
+          divs[cell[0]][cell[1]].toggleClass('alive', cell[2]);
+        } catch (e) {};
       },
 
       /**
