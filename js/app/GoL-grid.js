@@ -1,4 +1,4 @@
-define(['jquery', 'app/GoL-model', 'app/GoL-canvas-renderer', 'app/GoL-shapes', 'jquery-ui'], function($, model, divrenderer, golshapes) {
+define(['jquery', 'app/GoL-model', 'app/GoL-shapes', 'app/renderers', 'jquery-ui'], function($, model, golshapes, renderers) {
 
   var possibleBirths=[],
       dyingList=[],
@@ -12,6 +12,9 @@ define(['jquery', 'app/GoL-model', 'app/GoL-canvas-renderer', 'app/GoL-shapes', 
       grid_rows = 0,
       grid_cols = 0,
       iterations = 0,
+      renderer = 0,
+      the_doc = 0,
+      callback = 0
 
       shapes = [
         { category: 'default', name: 'dot', width: '1', height: '1', rule: 'B3/S23', shape: 'o!'},
@@ -223,15 +226,23 @@ define(['jquery', 'app/GoL-model', 'app/GoL-canvas-renderer', 'app/GoL-shapes', 
 
       // Constructor
       GoLGrid = function(doc, gridHeight, gridWidth, rows, cols) {
-        var r, c, callback = $.Callbacks();
+        var r, c, rendererInfo;
+
+        callback = $.Callbacks();
+
+        the_doc = doc;
+        grid_rows = rows;
+        grid_cols = cols;
+        rendererInfo = renderers.get('div');
+        require([rendererInfo.file], function(r) {
+          renderer = r;
+          renderer.init(the_doc, grid_rows, grid_cols, model);
+          callback.add(renderer.cellChanged);
+        });
 
         $(".GoLGrid").css({"width": gridWidth, "height": gridHeight});
         $(".GoLGrid").resizable();
-        grid_rows = rows;
-        grid_cols = cols;
         model.init(-1, -1, callback);
-        divrenderer.init(doc, rows, cols, model);
-        callback.add(divrenderer.cellChanged);
 
         for (r = 0; r < rows; r++) {
           data[r] = [];
@@ -257,21 +268,25 @@ define(['jquery', 'app/GoL-model', 'app/GoL-canvas-renderer', 'app/GoL-shapes', 
       timerGoL = 0;
 
   GoLGrid.prototype.startStop = function() {
-    if (timerGoL === 0) {
-      extraBirthsRate = $("#extraBirthsPerThousand").val() / 1000.0;
-      extraDeathsRate = $("#extraDeathsPerThoursand").val() / 1000.0;
-      increaseFertilityRate = $("#increaseFertilityPerThousand").val() / 1000.0;
-      increaseDeathRate = $("#increaseDeathPerThousand").val() / 1000.0;
-      timerGoL = setInterval(function(){goLStep();},$("#txtInterval").val());
-      $("#startStopBtn").attr('value', 'Stop');
-      $("#status").text("Status: Running");
-      golStatus.start();
+    if (renderer === 0) {
+      alert('no quite ready yet');
     } else {
-      clearInterval(timerGoL);
-      golStatus.stop();
-      timerGoL = 0;
-      $("#startStopBtn").attr('value', 'Start');
-      $("#status").text("Status: Stopped");
+      if (timerGoL === 0) {
+        extraBirthsRate = $("#extraBirthsPerThousand").val() / 1000.0;
+        extraDeathsRate = $("#extraDeathsPerThoursand").val() / 1000.0;
+        increaseFertilityRate = $("#increaseFertilityPerThousand").val() / 1000.0;
+        increaseDeathRate = $("#increaseDeathPerThousand").val() / 1000.0;
+        timerGoL = setInterval(function(){goLStep();},$("#txtInterval").val());
+        $("#startStopBtn").attr('value', 'Stop');
+        $("#status").text("Status: Running");
+        golStatus.start();
+      } else {
+        clearInterval(timerGoL);
+        golStatus.stop();
+        timerGoL = 0;
+        $("#startStopBtn").attr('value', 'Start');
+        $("#status").text("Status: Stopped");
+      }
     }
   };
 
@@ -282,7 +297,7 @@ define(['jquery', 'app/GoL-model', 'app/GoL-canvas-renderer', 'app/GoL-shapes', 
   };
 
   $(function() {
-    var index = 0, $shapes = $('#shapes');
+    var index = 0, $shapes = $('#shapes'), $renderers = $('#renderers');
 
     golStatus = golStatusMgr();
     initShapes(grid_rows, grid_cols);
@@ -291,7 +306,19 @@ define(['jquery', 'app/GoL-model', 'app/GoL-canvas-renderer', 'app/GoL-shapes', 
       index += 1;
     });
     $shapes.on('change', function(e) {
-        divrenderer.setCursorShape(shapes[parseInt(this.value)].cells);
+        renderer.setCursorShape(shapes[parseInt(this.value)].cells);
+    });
+    renderers.list().forEach(function(r) {
+      $renderers.append($('<option></option>').val(r.file).html(r.name));
+    });
+    $renderers.on('change', function(e) {
+      $("#grid1").empty();
+      require([this.value], function(r) {
+        var renderer = r;
+
+        renderer.init(the_doc, grid_rows, grid_cols, model);
+        callback.add(renderer.cellChanged);
+      });
     });
   });
 

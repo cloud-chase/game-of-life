@@ -62,7 +62,7 @@
 }
 
 .container{
-  width: 90%;
+  width: 100%;
   height: 20%;
   display: inline-block;
 
@@ -91,4 +91,7 @@
 .split-3-5 {
   display: inline-block;
   width: 59%;
+}
+input[type='text'] {
+  width: 20px;
 }

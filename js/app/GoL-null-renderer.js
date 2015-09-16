@@ -1,5 +1,5 @@
 define(function() {
-  
+
   var nul = function() { };
 
   return {

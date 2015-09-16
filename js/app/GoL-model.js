@@ -1,11 +1,11 @@
 define(function() {
-  
+
   /**
     This provides a model for Conway's Game of Life, storing the state of a
     grid of cells in a reasonably efficient way and providing various methods
     to query the states, modify the states, and be notified of changes to the
     states of cells in the grid.
-    
+
     To minimise object overhead, this model represents and works with cells as
     arrays of three elements, being the row number, column number, and status
     of the cell (true=alive, false=dead). The total set of currently living
@@ -27,7 +27,7 @@ define(function() {
         for (cell of cells) {
           // normalise row and column indices and get current state
           getCell(cell);
-          
+
           // if the cell is not already alive, add it to the set and notify
           if (!cell[2]) {
             row = living[cell[0]];
@@ -53,7 +53,7 @@ define(function() {
         for (var cell of cells) {
           // normalise row and column indices and get current state
           getCell(cell);
-          
+
           // if the cell is currently alive, remove it from the set and notify
           if (cell[2]) {
             delete living[cell[0]][cell[1]];
@@ -90,11 +90,11 @@ define(function() {
         if (gridHeight >= 0) {
           cell[0] = (cell[0] % gridHeight + gridHeight) % gridHeight;
         }
-        
+
         if (gridWidth >= 0) {
           cell[1] = (cell[1] % gridWidth + gridWidth) % gridWidth;
         }
-        
+
         cell[2] = living[cell[0]] && living[cell[0]][cell[1]];
         return cell;
       },

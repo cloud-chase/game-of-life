@@ -127,7 +127,8 @@ define(function() {
   return {
     init: init,
     cellChanged: cellChanged,
-    setCursorShape: setCursorShape
+    setCursorShape: setCursorShape,
+    close: close
   };
 
 });
