@@ -182,7 +182,9 @@ define(['jquery', 'app/GoL-model', 'app/GoL-canvas-renderer', 'app/GoL-shapes', 
             }
             $iterations.text('' + iterations);
             $lifecount.text('' + model.getNumberLiving());
-            $timingAverage.text(((lastTime - firstTime) / iterations).toFixed(2));
+            if (iterations > 0) {
+              $timingAverage.text(((lastTime - firstTime) / iterations).toFixed(2));
+            }
           };
 
         that.start = function() {
