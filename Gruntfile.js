@@ -7,10 +7,11 @@ module.exports = function(grunt) {
       sass_dependencies = 'css/**/*.scss',
       sass_to_compile = 'css/GoL.scss',
       sass_compiled = 'css/GoL.css',
-      lif_shapes_to_compile = 'shapes/jslife',
+      lif_shapes_folder = 'shapes/jslife/',
+      lif_shapes_to_compile = lif_shapes_folder + '**/*.lif',
       lif_shapes_compiled = 'js/app/GoL-shapes.js',
 
-  parseLif_inner = function(filedata, category, name) {
+  parseLif = function(filedata) {
     var lineRegx = /^[^#](.*)$/gm;
     var lifSegRegx = /([0-9]*)([bo])/g;
     var x = 0,
@@ -45,8 +46,6 @@ module.exports = function(grunt) {
     }
 
     return {
-      category: category,
-      name: name,
       width: x,
       height: y,
       rule: rule,
@@ -57,23 +56,27 @@ module.exports = function(grunt) {
   parseLifs = function() {
     var parsedShapes = [],
       compiled = this.data.dest,
-      toCompile = this.data.src,
+      toCompile = this.filesSrc;
 
-    parseLif = function(abspath, rootdir, subdir, filename) {
-      var ext = filename.substring(filename.length - 3).toLowerCase();
-      var shape;
-      if (ext === 'lif') {
-        shape = parseLif_inner(grunt.file.read(abspath), subdir, filename.substring(0, filename.length - 4));
-        if (shape.width < 200 && shape.height < 200) {
-          parsedShapes.push(shape);
-        }
+    toCompile.forEach(function(filepath) {
+      var filename, foldername, filedata, temp, shape;
+
+      temp = filepath.substring(lif_shapes_folder.length).split('/');
+      foldername = temp[0];
+      filename = temp[1];
+      filedata = grunt.file.read(filepath);
+      shape = parseLif(filedata);
+
+      if (shape.width < 250 && shape.height < 250) {
+        shape.name = filename;
+        shape.category = foldername;
+        parsedShapes.push(shape);
       }
-    };
+    });
 
     if (grunt.file.exists(compiled)) {
       grunt.file.delete(compiled);
     }
-    grunt.file.recurse(toCompile, parseLif);
     grunt.file.write(compiled, '/* GENERATED FILE */define( function() { return' + JSON.stringify(parsedShapes) + '; });');
   };
 
