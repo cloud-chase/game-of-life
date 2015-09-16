@@ -114,10 +114,10 @@ define(function() {
         method should be called every time the state of a cell changes, to
         enable the renderer to reflect the current state of all cells.
       */
-      cellChanged = function(cell) {
-        try {
-          divs[cell[0]][cell[1]].toggleClass('alive', cell[2]);
-        } catch (e) {};
+      cellChanged = function(cell, alive) {
+        divs[cell[0]] &&
+        divs[cell[0]][cell[1]] &&
+        divs[cell[0]][cell[1]].toggleClass('alive', alive);
       },
 
       /**
