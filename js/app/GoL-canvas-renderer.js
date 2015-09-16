@@ -147,7 +147,8 @@ define(['jquery'], function($) {
   return {
     init: init,
     cellChanged: cellChanged,
-    setCursorShape: setCursorShape
+    setCursorShape: setCursorShape,
+    name: 'GoL-canvas-renderer'
   };
 
 });

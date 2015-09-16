@@ -101,6 +101,12 @@ define(function() {
           toggleShape(this, cursorShape, 'prenatal', true);
         });
 
+        model.forEachLiving(function(cell) {
+          var div = divs[cell[0]][cell[1]];
+
+          div.addClass('alive');
+        });
+
       },
 
       /**
@@ -128,7 +134,7 @@ define(function() {
     init: init,
     cellChanged: cellChanged,
     setCursorShape: setCursorShape,
-    close: close
+    name: 'div-renderer'
   };
 
 });

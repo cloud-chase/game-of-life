@@ -5,7 +5,8 @@ define(function() {
   return {
     init: nul,
     cellChanged: nul,
-    setCursorShape: nul
+    setCursorShape: nul,
+    name: 'null-renderer'
   };
 
 });

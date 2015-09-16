@@ -314,8 +314,7 @@ define(['jquery', 'app/GoL-model', 'app/GoL-shapes', 'app/renderers', 'jquery-ui
     $renderers.on('change', function(e) {
       $("#grid1").empty();
       require([this.value], function(r) {
-        var renderer = r;
-
+        renderer = r;
         renderer.init(the_doc, grid_rows, grid_cols, model);
         callback.add(renderer.cellChanged);
       });
