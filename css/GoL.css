@@ -1,0 +1,86 @@
+.block {
+  display: inline-block;
+  vertical-align: top;
+  -webkit-box-sizing: border-box;
+  /* Safari/Chrome, other WebKit */
+  -moz-box-sizing: border-box;
+  /* Firefox, other Gecko */
+  box-sizing: border-box; }
+
+.background-grid {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  z-index: -1;
+  /* behind main grid */ }
+
+.GoLGrid {
+  /*	width:200px; */
+  /*	height:200px; */
+  border: 1px solid; }
+
+.GoLRow {
+  /*	width:100%; */
+  /*	height:10%; */ }
+
+.GoLCell {
+  /*	width:10%;	*/
+  /*	height:100%; */
+  /*	border:1px solid; */
+  -moz-user-select: none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  /*
+   Introduced in IE 10.
+   See http://ie.microsoft.com/testdrive/HTML5/msUserSelect/
+  */
+  -ms-user-select: none;
+  user-select: none; }
+
+.background-grid .GoLRow:nth-of-type(2n+1) .GoLCell:nth-of-type(2n),
+.background-grid .GoLRow:nth-of-type(2n) .GoLCell:nth-of-type(2n+1) {
+  background-color: lavender; }
+
+.foreground-grid .GoLRow .GoLCell.prenatal {
+  background-color: gray; }
+.foreground-grid .GoLRow .alive {
+  background-color: black; }
+.foreground-grid .GoLRow .alive.prenatal {
+  background-color: gray; }
+
+.container {
+  width: 100%;
+  height: 20%;
+  display: inline-block;
+  -webkit-box-sizing: border-box;
+  /* Safari/Chrome, other WebKit */
+  -moz-box-sizing: border-box;
+  /* Firefox, other Gecko */
+  box-sizing: border-box; }
+
+.left {
+  float: left; }
+
+.right {
+  float: right; }
+
+.fix {
+  height: 20px;
+  overflow: hidden; }
+
+.split-2 {
+  display: inline-block;
+  width: 49%; }
+
+.split-2-5 {
+  display: inline-block;
+  width: 39%; }
+
+.split-3-5 {
+  display: inline-block;
+  width: 59%; }
+
+input[type='text'] {
+  width: 20px; }
+
+/*# sourceMappingURL=GoL.css.map */
