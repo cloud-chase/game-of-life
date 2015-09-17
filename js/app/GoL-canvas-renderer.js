@@ -64,7 +64,7 @@ define(['jquery'], function($) {
 
         var setCursor = function(event, forceoff) {
               // remove any current cursor
-              cursorCells.forEach(function(cell) { paintCell(model.getCell(cell)); });
+              cursorCells.forEach(function(cell) { paintCell(cell, model.getCell(cell) ? '#000000' : '#ffffff'); });
               cursorCells.length = 0;
 
               if (!forceoff) {
@@ -74,7 +74,9 @@ define(['jquery'], function($) {
                 if ((row > 0) && (column > 0) && (row < gridHeight) && (column < gridWidth)) {
                   $("#activeCell").text("Active Cell - Row: " + row + ", Col: " + column);
                   for (var offset of cursorShape) {
-                    cursorCells.push(model.getCell([row + offset[0], column + offset[1], false]));
+                    var cell = [row + offset[0], column + offset[1]];
+                    model.getCell(cell);
+                    cursorCells.push(cell);
                   }
                   drawCursor();
                 } else {
@@ -111,9 +113,9 @@ define(['jquery'], function($) {
         });
       },
 
-      paintCell = function(cell, overridecolor) {
+      paintCell = function(cell, color) {
         if ((cell[0] >= 0) && (cell[1] >= 0) && (cell[0] < gridHeight) && (cell[1] < gridWidth)) {
-          context.fillStyle = overridecolor || (cell[2] ? '#000000' : '#ffffff');
+          context.fillStyle = color;
           context.fillRect(originX + (cell[1] * cellWidth), originY + (cell[0] * cellHeight), cellWidth - 1, cellHeight - 1);
         }
       },
@@ -127,8 +129,8 @@ define(['jquery'], function($) {
         method should be called every time the state of a cell changes, to
         enable the renderer to reflect the current state of all cells.
       */
-      cellChanged = function(cell) {
-        paintCell(cell);
+      cellChanged = function(cell, alive) {
+        paintCell(cell, alive ? '#000000' : '#ffffff');
         if (cursorCells.some(function(cursor) { return (cell[0] == cursor[0]) && (cell[1] == cursor[1]); })) {
           drawCursor();
         }

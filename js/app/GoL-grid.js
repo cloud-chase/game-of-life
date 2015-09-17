@@ -86,35 +86,22 @@ define(['jquery', 'app/GoL-model', 'app/GoL-shapes', 'app/renderers', 'jquery-ui
         processShapes();
       },
 
-      checkGoLCellState = function(cell) {
-        // Individual cell processor
-        var n = model.getCellNeighbours(cell),// adjacent
-            sum = 0, i;
-
-        for (i in n) {
-          if (n[i][2]) {
-            sum += 1;
-          } else if (cell[2]) {  // only consider neighbours of live cells as possible births
-            (possibleBirths[n[i][0]] || (possibleBirths[n[i][0]] = []))[n[i][1]] = true;
-          }
-        }
-
-        return sum;
-      },
-
       checkGoLCellStates = function() {
         var r, c, pcell, livens;
 
         // process living cells to see if they might be deaths
         model.forEachLiving(function(cell) {
           celldata = data[cell[0]] && data[cell[0]][cell[1]];
-          livens = checkGoLCellState(cell);
+          livens = model.getCellNeighbours(cell, function(ncell) {
+            // add dead neighbours of the living cell to the possible births list
+            (possibleBirths[ncell[0]] || (possibleBirths[ncell[0]] = []))[ncell[1]] = true;
+          });
 
           if ( (livens < 2) ||
                (livens > 3) ||
                ((extraDeathsRate > 0) && (Math.random() < extraDeathsRate)) ||
                (celldata && (celldata.deathRate > 0) && (Math.random() < celldata.deathRate)) ) {
-            dyingList.push(cell);
+            dyingList.push([cell[0], cell[1]]);
             if (celldata) {
               celldata.fertilityRate = 0; // reset
               celldata.deathRate = 0;
@@ -127,9 +114,9 @@ define(['jquery', 'app/GoL-model', 'app/GoL-shapes', 'app/renderers', 'jquery-ui
         // process adjacent cells to see if they might be births
         for (r in possibleBirths) {
           for (c in possibleBirths[r]) {
-            pcell = [+r, +c, false];
+            pcell = [+r, +c];
             celldata = data[+r] && data[+r][+c];
-            livens = checkGoLCellState(pcell);
+            livens = model.getCellNeighbours(pcell);
 
             if ( (livens === 3) ||
                  ((extraBirthsRate > 0) && (Math.random() < extraBirthsRate)) ||

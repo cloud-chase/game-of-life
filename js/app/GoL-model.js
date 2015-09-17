@@ -14,54 +14,45 @@ define(function() {
 
   var gridHeight = 0,
       gridWidth = 0,
-      living = [],
+      living = {},
       callback = undefined,
 
       /**
-        Add cells to the living set. The cells must be arrays of three
-        elements, containing the row and column as the first two elements.
-        The third element of each cell will be set to true during this method.
+        Add cells to the living set. Each cells must be an array containing
+        the row and column as the first two elements.
       */
       addLiving = function(cells) {
         var row, cell;
         for (cell of cells) {
-          // normalise row and column indices and get current state
-          getCell(cell);
-
-          // if the cell is not already alive, add it to the set and notify
-          if (!cell[2]) {
+          // normalise row and column indices and check if currently dead
+          if (!getCell(cell)) {
             row = living[cell[0]];
             if (!row) {
-              row = living[cell[0]] = [];
+              row = living[cell[0]] = {};
               // include a non-enumerable 'count' property to keep track of entries
               Object.defineProperty(row, 'count', { writable: true, value: 1 });
             } else {
               row.count++;
             }
-            cell[2] = row[cell[1]] = true;
-            callback.fire(cell);
+            row[cell[1]] = true;
+            callback.fire(cell, true);
           }
         }
       },
 
       /**
-        Remove cells from the living set. The cells must be arrays of three
-        elements, containing the row and column as the first two elements.
-        The third element of each cell will be set to false during this method.
+        Remove cells from the living set. Each cell must be an array
+        containing the row and column as the first two elements.
       */
       removeLiving = function(cells) {
         for (var cell of cells) {
-          // normalise row and column indices and get current state
-          getCell(cell);
-
-          // if the cell is currently alive, remove it from the set and notify
-          if (cell[2]) {
+          // normalise row and column indices and check if currently alive
+          if (getCell(cell)) {
             delete living[cell[0]][cell[1]];
             if (--living[cell[0]].count === 0) {
               delete living[cell[0]];
             }
-            cell[2] = false;
-            callback.fire(cell);
+            callback.fire(cell, false);
           }
         }
       },
@@ -70,21 +61,20 @@ define(function() {
         Initialise the model. The number of rows and columns are supplied,
         along with a 'callback' object which must have a 'fire' method on it
         which will be called every time a cell changes state with the cell
-        [row, column, alive] being passed as the only argument. If the number
-        of rows is -1, the grid is infinitely high. If the number of columns
-        is -1, the grid is infinitely wide.
+        [row, column] and alive state (true or false) being passed as
+        arguments. If the number of rows is -1, the grid is infinitely high.
+        If the number of columns is -1, the grid is infinitely wide.
       */
       init = function(rows, cols, cellcallback) {
         gridHeight = rows;
         gridWidth = cols;
-        living.length = 0;
+        living = {};
         callback = cellcallback;
       },
 
       /**
-        Update a cell [row, column, alive], ensuring the row and column are
-        normalised for any wrapping that is being applied, and setting the
-        third element to the the current living state.
+        Update a cell [row, column], ensuring the row and column are normalised
+        for any wrapping that is being applied, and return the current state.
       */
       getCell = function(cell) {
         if (gridHeight >= 0) {
@@ -95,20 +85,21 @@ define(function() {
           cell[1] = (cell[1] % gridWidth + gridWidth) % gridWidth;
         }
 
-        cell[2] = living[cell[0]] && living[cell[0]][cell[1]];
-        return cell;
+        return living[cell[0]] && living[cell[0]][cell[1]];
       },
 
       /**
         Call the specified handler function once for each cell that is
-        currently living, with the cell [row, column, alive] being passed as
+        currently living, with the cell [row, column] being passed as
         the only argument. The cells are supplied in no significant order.
       */
       forEachLiving = function(handler) {
-        var r, c;
+        var r, c, cell = [];
         for (r in living) {
+          cell[0] = r;
           for (c in living[r]) {
-            handler([+r, +c, true]);
+            cell[1] = c;
+            handler(cell);
           }
         }
       },
@@ -117,11 +108,9 @@ define(function() {
         Return the number of cells currently living.
       */
       getNumberLiving = function() {
-        var r, c, result = 0;
+        var r, result = 0;
         for (r in living) {
-          for (c in living[r]) {
-            result++;
-          }
+          result += living[r].count;
         }
         return result;
       },
@@ -131,7 +120,7 @@ define(function() {
       */
       clearLiving = function() {
         var cells = [];
-        forEachLiving(function(cell) { cells.push(cell); });
+        forEachLiving(function(cell) { cells.push([cell[0], cell[1]]); });
         removeLiving(cells);
       },
 
@@ -145,19 +134,31 @@ define(function() {
       },
 
       /**
-        Return all the neighbours of a cell in an array.
+        Return the number of the neighbours of a cell currently living. If a
+        handler function is provided it is called once for each neighbour of
+        the cell that is not currently living.
       */
-      getCellNeighbours = function(cell) {
-        return [
-          getCell([cell[0] - 1, cell[1] - 1, false]),
-          getCell([cell[0] - 1, cell[1], false]),
-          getCell([cell[0] - 1, cell[1] + 1, false]),
-          getCell([cell[0], cell[1] - 1, false]),
-          getCell([cell[0], cell[1] + 1, false]),
-          getCell([cell[0] + 1, cell[1] - 1, false]),
-          getCell([cell[0] + 1, cell[1], false]),
-          getCell([cell[0] + 1, cell[1] + 1, false])
-        ];
+      getCellNeighbours = function(cell, handler) {
+        var result = 0,
+            handle = function() {
+              if (getCell(cell)) {
+                result++;
+              } else if (handler) {
+                handler(cell);
+              }
+            };
+        
+        cell[0]--; handle();
+        cell[1]--; handle();
+        cell[0]++; handle();
+        cell[0]++; handle();
+        cell[1]++; handle();
+        cell[1]++; handle();
+        cell[0]--; handle();
+        cell[0]--; handle();
+        cell[1]--; cell[0]++;
+        
+        return result;
       };
 
   return {
