@@ -6,6 +6,9 @@ define(function() {
     }, {
       name: 'canvas',
       file: 'app/GoL-canvas-renderer'
+    }, {
+      name: 'null',
+      file: 'app/GoL-null-renderer'
     }
   ],
   list = function() {
