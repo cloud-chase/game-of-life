@@ -19,6 +19,9 @@ define(['jquery', 'app/GoL-model', 'app/GoL-shapes', 'app/renderers', 'jquery-ui
       shapes = [
         { category: 'default', name: 'dot', width: '1', height: '1', rule: 'B3/S23', shape: 'o!'},
 
+        // seed
+        { category: 'default', name: 'seed', width: '3', height: '4', shape: 'bo$obo$obo$bo!'},
+
         // glider
         { category: 'default', name: 'glider', width: '3', height: '3', shape: '3o$2bo$bo!'},
 
@@ -40,6 +43,11 @@ define(['jquery', 'app/GoL-model', 'app/GoL-shapes', 'app/renderers', 'jquery-ui
         //  [4,-2],[4,3],[4,5],[4,10],[5,0],[5,1],[5,2],[5,6],[5,7],[5,8],[7,0],[7,1],[7,2],[7,6],
         //  [7,7],[7,8],[8,-2],[8,3],[8,5],[8,10],[9,-2],[9,3],[9,5],[9,10],[10,-2],[10,3],[10,5],
         //  [10,10],[12,0],[12,1],[12,2],[12,6],[12,7],[12,8]]
+
+        // lines
+        { category: 'default', name: 'line20', width: '20', height: '1', shape: '20o!'},
+        { category: 'default', name: 'line50', width: '20', height: '1', shape: '50o!'},
+        { category: 'default', name: 'line100', width: '20', height: '1', shape: '100o!'}
       ],
 
       processShapes = function() {
@@ -237,10 +245,6 @@ define(['jquery', 'app/GoL-model', 'app/GoL-shapes', 'app/renderers', 'jquery-ui
             data[r][c] = { fertilityRate: 0, deathRate: 0 };
           }
         }
-
-        r = Math.floor(rows / 2);
-        c = Math.floor(cols / 2);
-        model.setAlive([[r - 1, c], [r, c - 1], [r, c + 1], [r + 1, c]], true);
       },
 
       // Public functions *** follow example aMethod ***
@@ -310,6 +314,26 @@ define(['jquery', 'app/GoL-model', 'app/GoL-shapes', 'app/renderers', 'jquery-ui
         renderer.setCursorShape(shapes[parseInt($('#shapes').val())].cells);
         callback.add(renderer.cellChanged);
       });
+    });
+
+    $(document).keyup(function(event) {
+      var $opt = $('#shapes option:selected');
+      var $newOpt;
+
+      switch (event.keyCode) {
+        case 38: // up
+          $newOpt = $opt.prev();
+          break;
+        case 40: // down
+          $newOpt = $opt.next();
+          break;
+        default:
+          $newOpt = undefined;
+      }
+      if ($newOpt && $newOpt.is('option')) {
+        $newOpt.prop('selected', true);
+        renderer.setCursorShape(shapes[parseInt($newOpt.val())].cells);
+      }
     });
   });
 
