@@ -48,17 +48,17 @@ define(function() {
         var mouseDown = false,
             toggleShapeInner = function(cell, toggleClass, forceOff) {
               try {
-                var div = divs[cell[0]][cell[1]];
+                var div = divs[cell[0]] && divs[cell[0]][cell[1]];
                 if (forceOff || div.hasClass(toggleClass)) {
                   if (toggleClass === 'alive') {
                     model.setAlive([cell], false);
-                  } else {
+                  } else if (div) {
                     div.removeClass(toggleClass);
                   }
                 } else {
                   if (toggleClass === 'alive') {
                     model.setAlive([cell], true);
-                  } else {
+                  } else if (div) {
                     div.addClass(toggleClass);
                   }
                 }
@@ -71,7 +71,9 @@ define(function() {
                   cell;
 
               for (var i in shape) {
-                toggleShapeInner(model.getCell([r + shape[i][0], c + shape[i][1], false]), toggleClass, forceOff);
+                cell = [r + shape[i][0], c + shape[i][1]];
+                model.getCell(cell);
+                toggleShapeInner(cell, toggleClass, forceOff);
               }
             };
 
@@ -102,9 +104,9 @@ define(function() {
         });
 
         model.forEachLiving(function(cell) {
-          var div = divs[cell[0]][cell[1]];
-
-          div.addClass('alive');
+          divs[cell[0]] &&
+          divs[cell[0]][cell[1]] &&
+          divs[cell[0]][cell[1]].addClass('alive');
         });
 
       },
