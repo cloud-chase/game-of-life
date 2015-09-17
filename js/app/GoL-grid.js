@@ -220,7 +220,7 @@ define(['jquery', 'app/GoL-model', 'app/GoL-shapes', 'app/renderers', 'jquery-ui
         the_doc = doc;
         grid_rows = rows;
         grid_cols = cols;
-        rendererInfo = renderers.get('div');
+        rendererInfo = renderers.getDefault();
         require([rendererInfo.file], function(r) {
           renderer = r;
           renderer.init(the_doc, grid_rows, grid_cols, model);
@@ -296,7 +296,11 @@ define(['jquery', 'app/GoL-model', 'app/GoL-shapes', 'app/renderers', 'jquery-ui
         renderer.setCursorShape(shapes[parseInt(this.value)].cells);
     });
     renderers.list().forEach(function(r) {
-      $renderers.append($('<option></option>').val(r.file).html(r.name));
+      var selected = '';
+      if (r.defaultRenderer) {
+        selected = 'selected="true"';
+      }
+      $renderers.append($('<option ' + selected + '></option>').val(r.file).html(r.name));
     });
     $renderers.on('change', function(e) {
       $("#grid1").empty();

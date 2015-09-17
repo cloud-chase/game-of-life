@@ -1,32 +1,33 @@
 define(function() {
-  var renderers = [
+  var that = {}, renderers = [
     {
       name: 'div',
-      file: 'app/div-renderer'
+      file: 'app/renderers/div-renderer'
     }, {
       name: 'canvas',
-      file: 'app/GoL-canvas-renderer'
+      defaultRenderer: true,
+      file: 'app/renderers/GoL-canvas-renderer'
     }, {
       name: 'null',
-      file: 'app/GoL-null-renderer'
+      file: 'app/renderers/GoL-null-renderer'
     }
-  ],
-  list = function() {
+  ];
+  that.list = function() {
     return renderers;
-  },
-  get = function(name) {
+  };
+  that.get = function(name) {
     return renderers.find(function(element, index, array) {
-      return element.name = name;
+      return element.name === name;
     });
-  },
-  require = function(name, callback) {
-    var rendererInfo, renderer;
-
-    rendererInfo = get(name);
-    requrie([rendererInfo.file], callback);
   };
-  return {
-    list: list,
-    get: get
+  that.getDefault = function() {
+    var r = renderers.find(function(element, index, array) {
+      return element.defaultRenderer && element.defaultRenderer === true;
+    });
+    if (r === undefined) {
+      r = renderers[0];
+    }
+    return r;
   };
+  return that;
 });
