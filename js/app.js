@@ -11,5 +11,5 @@ requirejs.config({
 
 var g;
 requirejs(['app/GoL-grid'], function(grid) {
-  g = new grid(document, "80%", "100%", 121, 191);	// Prefer and odd number of lines so there is a middle
+  g = new grid(document, "80%", "100%", 295, 455);	// Prefer and odd number of lines so there is a middle
 });

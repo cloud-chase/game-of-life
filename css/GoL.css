@@ -43,8 +43,10 @@
 
 .foreground-grid .GoLRow .GoLCell.prenatal {
   background-color: gray; }
+
 .foreground-grid .GoLRow .alive {
   background-color: black; }
+
 .foreground-grid .GoLRow .alive.prenatal {
   background-color: gray; }
 
@@ -82,5 +84,3 @@
 
 input[type='text'] {
   width: 20px; }
-
-/*# sourceMappingURL=GoL.css.map */
