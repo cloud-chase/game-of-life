@@ -1,18 +1,19 @@
 define(['jquery'], function($) {
 
   var cursorShape = [[0,0]],
+      cursorCell,
       cursorCells = [],
       gridWidth, gridHeight,
       cellWidth, cellHeight,
       originX, originY,
-      context,
+      model, context,
 
       /**
         Initialise the renderer. The HTML document is supplied, and the rows
         and columns that the rendered grid should display, and a model which
         the renderer will use.
       */
-      init = function(doc, rows, cols, model) {
+      init = function(doc, rows, cols, amodel) {
 
         var $grid = $('#grid1'),
             canvas = doc.createElement("Canvas"),
@@ -58,33 +59,30 @@ define(['jquery'], function($) {
         context = canvas.getContext('2d');
         gridWidth = cols;
         gridHeight = rows;
+        model = amodel;
 
         redraw();
         $(window).resize(redraw);
 
-        var setCursor = function(event, forceoff) {
-              // remove any current cursor
-              cursorCells.forEach(function(cell) { paintCell(cell, model.getCell(cell) ? '#000000' : '#ffffff'); });
-              cursorCells.length = 0;
-
-              if (!forceoff) {
-                // add cursor at new position
-                var row = Math.floor((event.pageY - $canvas.offset().top - originY) / cellHeight),
-                    column = Math.floor((event.pageX - $canvas.offset().left - originX) / cellWidth);
-                if ((row > 0) && (column > 0) && (row < gridHeight) && (column < gridWidth)) {
-                  $("#activeCell").text("Active Cell - Row: " + row + ", Col: " + column);
-                  for (var offset of cursorShape) {
-                    var cell = [row + offset[0], column + offset[1]];
-                    model.getCell(cell);
-                    cursorCells.push(cell);
-                  }
-                  drawCursor();
-                } else {
-                  $("#activeCell").text("Active Cell:");
-                }
-              } else {
+        var setCursor = function(event) {
+              // add cursor at new position
+              var row = Math.floor((event.pageY - $canvas.offset().top - originY) / cellHeight),
+                  column = Math.floor((event.pageX - $canvas.offset().left - originX) / cellWidth),
+                  result = true;
+          
+              if ((row < 0) || (column < 0) || (row >= gridHeight) || (column >= gridWidth)) {
+                clearCursor();
+                cursorCell = undefined;
                 $("#activeCell").text("Active Cell:");
+              } else if (!cursorCell || (row != cursorCell[0]) || (column != cursorCell[1])) {
+                cursorCell = [row, column];
+                createCursor();
+                $("#activeCell").text("Active Cell - Row: " + row + ", Col: " + column);
+              } else {
+                result = false;
               }
+          
+              return result;
             },
 
             mousedown = false;
@@ -101,15 +99,19 @@ define(['jquery'], function($) {
         });
 
         $('#grid1 canvas').mousemove(function(event) {
-          setCursor(event);
-          if (mousedown) {
+          if (setCursor(event) && mousedown) {
             model.setAlive(cursorCells, true);
             drawCursor();
           }
         });
 
         $('#grid1 canvas').mouseleave(function(event) {
-          setCursor(event, true);
+          if (cursorCell) {
+            // remove any current cursor and set the cursor off
+            clearCursor();
+            cursorCell = undefined;
+            $("#activeCell").text("Active Cell:");
+          }
         });
       },
 
@@ -119,9 +121,30 @@ define(['jquery'], function($) {
           context.fillRect(originX + (cell[1] * cellWidth), originY + (cell[0] * cellHeight), cellWidth - 1, cellHeight - 1);
         }
       },
-
+      
+      clearCursor = function() {
+        // remove any current cursor
+        cursorCells.forEach(function(cell) { paintCell(cell, model.getCell(cell) ? '#000000' : '#ffffff'); });
+        cursorCells.length = 0;
+      },
+      
       drawCursor = function() {
+        // draw/redraw any current cursor
         cursorCells.forEach(function(cell) { paintCell(cell, '#808080'); });
+      },
+
+      createCursor = function() {
+        // make a new cursor
+        clearCursor();
+        if (cursorCell) {
+          for (var offset of cursorShape) {
+            var cell = [cursorCell[0] + offset[0], cursorCell[1] + offset[1]];
+            model.getCell(cell);
+            cursorCells.push(cell);
+          }
+          
+          drawCursor();
+        }
       },
 
       /**
@@ -130,9 +153,9 @@ define(['jquery'], function($) {
         enable the renderer to reflect the current state of all cells.
       */
       cellChanged = function(cell, alive) {
-        paintCell(cell, alive ? '#000000' : '#ffffff');
-        if (cursorCells.some(function(cursor) { return (cell[0] == cursor[0]) && (cell[1] == cursor[1]); })) {
-          drawCursor();
+        if ( ((cell[0] >= 0) && (cell[1] >= 0) && (cell[0] < gridHeight) && (cell[1] < gridWidth)) &&
+             (!cursorCells || !cursorCells.some(function(cursor) { return (cell[0] == cursor[0]) && (cell[1] == cursor[1]); })) ) {
+          paintCell(cell, alive ? '#000000' : '#ffffff');
         }
       },
 
@@ -144,6 +167,7 @@ define(['jquery'], function($) {
       */
       setCursorShape = function(shape) {
         cursorShape = shape;
+        createCursor();
       };
 
   return {
