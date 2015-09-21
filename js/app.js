@@ -4,8 +4,8 @@ requirejs.config({
   // except, if module ID starts with "app", load from the js/app directory
   paths: {
     'app': '../app',
-    'jquery': 'https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min',
-    'jquery-ui': 'https://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui'
+    'jquery': 'jquery/dist/jquery.min',
+    'jquery-ui': 'jquery-ui/jquery-ui.min'
   }
 });
 
