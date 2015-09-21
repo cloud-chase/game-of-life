@@ -171,7 +171,7 @@ define(['jquery'], function($) {
       */
       setCursorShape = function(shape) {
         cursorShape = shape;
-        createCursor();
+        drawCursor();
       };
 
   return {
