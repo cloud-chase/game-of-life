@@ -27,7 +27,7 @@ define(['jquery', 'app/GoL-model', 'app/GoL-shapes', 'app/renderers/renderers', 
 //        [[0,1],[1,3],[2,0],[2,1],[2,4],[2,5],[2,6]],
 
         // pentadecathlon
-        { category: 'default', name: 'pentadecathlon', width: '4', height: '4', shape: '2bo4bo$2ob4ob2o$2bo4bo!'},
+        { category: 'default', name: 'pentadecathlon', width: '10', height: '3', shape: '2bo4bo$2ob4ob2o$2bo4bo!'},
 //        [[1,0],[1,1],[0,2],[2,2],[1,3],[1,4],[1,5],[1,6],[0,7],[2,7],[1,8],[1,9]],
 
         // pulsar
@@ -39,8 +39,8 @@ define(['jquery', 'app/GoL-model', 'app/GoL-shapes', 'app/renderers/renderers', 
 
         // lines
         { category: 'default', name: 'line20', width: '20', height: '1', shape: '20o!'},
-        { category: 'default', name: 'line50', width: '20', height: '1', shape: '50o!'},
-        { category: 'default', name: 'line100', width: '20', height: '1', shape: '100o!'}
+        { category: 'default', name: 'line50', width: '50', height: '1', shape: '50o!'},
+        { category: 'default', name: 'line100', width: '100', height: '1', shape: '100o!'}
       ],
 
       processShapes = function() {
