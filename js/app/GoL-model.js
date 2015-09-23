@@ -1,15 +1,11 @@
 define(['app/sparse-2d-array'], function(sparse) {
 
   /**
-    This provides a model for Conway's Game of Life, storing the state of a
-    grid of cells in a reasonably efficient way and providing various methods
-    to query the states, modify the states, and be notified of changes to the
+    This provides a model for simple state cellular automata, including though
+    not limited to Conway's Game of Life. The model stores the state of a grid
+    of cells in a reasonably economic way and providing various methods to
+    query the states, modify the states, and be notified of changes to the
     states of cells in the grid.
-
-    To minimise object overhead, this model represents and works with cells as
-    arrays of three elements, being the row number, column number, and status
-    of the cell (true=alive, false=dead). The total set of currently living
-    cells is held in a sparse 2D array.
   */
 
   var gridHeight = 0,
@@ -21,13 +17,13 @@ define(['app/sparse-2d-array'], function(sparse) {
         Add cells to the living set. Each cells must be an array containing
         the row and column as the first two elements.
       */
-      addLiving = function(cells) {
+      addLiving = function(cells, value) {
         var row, cell;
         for (cell of cells) {
           // normalise row and column indices and check if currently dead
           if (!getCell(cell)) {
-            living.set(cell[0], cell[1], true);
-            callback.fire(cell, true);
+            living.set(cell[0], cell[1], value);
+            callback.fire(cell, value);
           }
         }
       },
@@ -80,7 +76,8 @@ define(['app/sparse-2d-array'], function(sparse) {
       /**
         Call the specified handler function once for each cell that is
         currently living, with the cell [row, column] being passed as
-        the only argument. The cells are supplied in no significant order.
+        the first argument and its state as the second argument. The
+        cells are not supplied in a guaranteed order.
       */
       forEachLiving = function(handler) {
         var r, c, cell = [];
@@ -88,7 +85,7 @@ define(['app/sparse-2d-array'], function(sparse) {
           cell[0] = r;
           for (c in living[r]) {
             cell[1] = c;
-            handler(cell);
+            handler(cell, living[r][c]);
           }
         }
       },
@@ -117,24 +114,25 @@ define(['app/sparse-2d-array'], function(sparse) {
         Set the state of all cells in an array, which must each be an array
         [row, column, any-value] (the third element of each will be set to
         match the alive parameter during the call) to living or not living.
+        Any falsy value denotes not living, and any other value becomes the
+        new state of the cells.
       */
-      setAlive = function(cells, alive) {
-        alive ? addLiving(cells) : removeLiving(cells);
+      setAlive = function(cells, state) {
+        state ? addLiving(cells, state) : removeLiving(cells);
       },
 
       /**
         Return the number of the neighbours of a cell currently living. If a
         handler function is provided it is called once for each neighbour of
-        the cell that is not currently living.
+        the cell, with the cell [row, column] being passed as the first
+        argument and its state as the second argument.
       */
       getCellNeighbours = function(cell, handler) {
         var result = 0,
             handle = function() {
-              if (getCell(cell)) {
-                result++;
-              } else if (handler) {
-                handler(cell);
-              }
+              var state = getCell(cell);
+              state && result++;
+              handler && handler(cell);
             };
         
         cell[0]--; handle();

@@ -82,7 +82,7 @@ define(['jquery'], function($) {
               context.stroke();
 
               // draw the cell states
-              model.forEachLiving(function(cell) { paintCell(context, cell, aliveColor); });
+              model.forEachLiving(function(cell, state) { paintCell(context, cell, aliveColor); });
 
               // draw the cursor
               drawCursor();
@@ -239,8 +239,8 @@ define(['jquery'], function($) {
         method should be called every time the state of a cell changes, to
         enable the renderer to reflect the current state of all cells.
       */
-      cellChanged = function(cell, alive) {
-        paintCell(context, cell, alive ? aliveColor : null);
+      cellChanged = function(cell, state) {
+        paintCell(context, cell, state ? aliveColor : null);
       },
 
       /**
