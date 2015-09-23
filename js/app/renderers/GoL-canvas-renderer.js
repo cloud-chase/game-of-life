@@ -2,11 +2,13 @@ define(['jquery'], function($) {
 
   var cursorShape = [[0,0]],
       cursorCell,
-      gridWidth, gridHeight,
-      cellWidth, cellHeight,
-      originX, originY,
-      model,
-      context, cursorContext,
+      startX, startY, rowHeight, colWidth,
+      firstRow, firstCol, lastRow, lastCol, firstRowInset, firstColInset,
+      model, context, cursorContext,
+      gridColor = '#e6e6fa',
+      aliveColor = '#202066',
+      cursorColor = '#8080ff',
+      gridLineWidth = 1,
 
       /**
         Initialise the renderer. The HTML document is supplied, and the rows
@@ -20,11 +22,12 @@ define(['jquery'], function($) {
             $canvas = $(canvas),
             cursorCanvas = doc.createElement("Canvas"),
             $cursorCanvas = $(cursorCanvas),
+            scrollX = 0, scrollY = 0,
 
             redraw = function() {
               var width = $grid.width(),
                   height = $grid.height(),
-                  i;
+                  step, start, end;
 
               // update and reset the canvas, in case dimensions have changed
               $canvas.attr('width', width).attr('height', height);
@@ -32,30 +35,56 @@ define(['jquery'], function($) {
 
               context.clearRect(0, 0, width, height);
 
-              cellWidth = Math.floor(width / cols);
-              cellHeight = Math.floor(height / rows);
-              originX = Math.floor((width % cols) / 2);
-              originY = Math.floor((height % rows) / 2);
+              startX = Math.floor(((width - gridLineWidth) % cols) / 2);
+              startY = Math.floor(((height - gridLineWidth) % rows) / 2);
+              rowHeight = Math.floor((height - gridLineWidth) / rows);
+              colWidth = Math.floor((width - gridLineWidth) / cols);
+
+              firstRow = Math.floor(scrollY / rowHeight);
+              firstCol = Math.floor(scrollX / colWidth);
+              lastRow = firstRow + rows;
+              lastCol = firstCol + cols;
+              firstRowInset = ((scrollY % rowHeight) + rowHeight) % rowHeight;
+              firstColInset = ((scrollX % colWidth) + colWidth) % colWidth;
 
               // draw a grid
-              context.strokeStyle = '#e6e6fa';
-              context.lineWidth = 1;
+              context.strokeStyle = gridColor;
+              context.lineWidth = gridLineWidth;
 
-              for (i = 0; i <= gridWidth; i++) {
-                context.moveTo(originX + (i * cellWidth) - 0.5, originY - 0.5);
-                context.lineTo(originX + (i * cellWidth) - 0.5, originY + (rows * cellHeight) - 0.5);
+              step = startX - firstColInset + ((gridLineWidth % 2) / 2);
+              start = startY;
+              end = startY + ((lastRow - firstRow) * rowHeight) + gridLineWidth;
+
+              if (firstColInset === 0) {
+                context.moveTo(step, start);
+                context.lineTo(step, end);
               }
 
-              for (i = 0; i <= gridHeight; i++) {
-                context.moveTo(originX - 0.5, originY + (i * cellHeight) - 0.5);
-                context.lineTo(originX + (cols * cellWidth) - 0.5, originY + (i * cellHeight) - 0.5);
+              for (i = firstCol + 1, step += colWidth; i <= lastCol; i++, step += colWidth) {
+                context.moveTo(step, start);
+                context.lineTo(step, end);
+              }
+
+              step = startY - firstRowInset + ((gridLineWidth % 2) / 2);
+              start = startX;
+              end = startX + ((lastCol - firstCol) * colWidth) + gridLineWidth;
+
+              if (firstRowInset === 0) {
+                context.moveTo(start, step);
+                context.lineTo(end, step);
+              }
+
+              for (i = firstRow + 1, step += rowHeight; i <= lastRow; i++, step += rowHeight) {
+                context.moveTo(start, step);
+                context.lineTo(end, step);
               }
 
               context.stroke();
 
               // draw the cell states
-              model.forEachLiving(function(cell) { paintCell(context, cell, '#000000'); });
-              
+              model.forEachLiving(function(cell) { paintCell(context, cell, aliveColor); });
+
+              // draw the cursor
               drawCursor();
             };
 
@@ -64,8 +93,6 @@ define(['jquery'], function($) {
         $cursorCanvas.css({ position: 'absolute', left: '0', right: '0' });
         context = canvas.getContext('2d');
         cursorContext = cursorCanvas.getContext('2d');
-        gridWidth = cols;
-        gridHeight = rows;
         model = amodel;
 
         redraw();
@@ -73,11 +100,12 @@ define(['jquery'], function($) {
 
         var setCursor = function(event) {
               // update cursor position
-              var row = Math.floor((event.pageY - $canvas.offset().top - originY) / cellHeight),
-                  column = Math.floor((event.pageX - $canvas.offset().left - originX) / cellWidth),
+              var o = $canvas.offset(),
+                  row = firstRow + Math.floor((event.pageY - o.top - startY + firstRowInset) / rowHeight),
+                  column = firstCol + Math.floor((event.pageX - o.left - startX + firstColInset) / colWidth),
                   result = true;
-          
-              if ((row < 0) || (column < 0) || (row >= gridHeight) || (column >= gridWidth)) {
+
+              if ((row < firstRow) || (column < firstCol) || (row > lastRow) || (column > lastCol)) {
                 cursorCell = undefined;
                 $("#activeCell").text("Active Cell:");
                 drawCursor();
@@ -88,7 +116,7 @@ define(['jquery'], function($) {
               } else {
                 result = false;
               }
-          
+
               return result;
             },
             
@@ -107,21 +135,47 @@ define(['jquery'], function($) {
               }
             },
 
-            mousedown = false;
+            mousedown = false,
+            mousedownX, mousedownY, mousedownScrollX, mousedownScrollY, mousemoving;
 
         $('#grid1 canvas').mousedown(function(event) {
           setCursor(event);
-          applyCursor();
           mousedown = true;
+          mousedownX = event.pageX;
+          mousedownY = event.pageY;
+          mousedownScrollX = scrollX;
+          mousedownScrollY = scrollY;
+          mousemoving = false;
         });
 
-        $(document).mouseup(function() {
+        $(document).mouseup(function(event) {
+          setCursor(event);
+          if (mousedown && !mousemoving) {
+            applyCursor();
+          }
           mousedown = false;
         });
 
         $('#grid1 canvas').mousemove(function(event) {
-          if (setCursor(event) && mousedown) {
-            applyCursor();
+          if (mousedown) {
+            if (Math.abs(event.pageX - mousedownX) + Math.abs(event.pageY - mousedownY) > 3) {
+              mousemoving = true;
+            }
+
+            if (mousemoving) {
+              if (cursorCell) {
+                cursorCell = undefined;
+                drawCursor();
+              }
+
+              scrollX = mousedownScrollX - event.pageX + mousedownX;
+              scrollY = mousedownScrollY - event.pageY + mousedownY;
+              redraw();
+            } else {
+              setCursor(event);
+            }
+          } else {
+            setCursor(event);
           }
         });
 
@@ -136,20 +190,46 @@ define(['jquery'], function($) {
       },
 
       paintCell = function(drawcontext, cell, color) {
-        if ((cell[0] >= 0) && (cell[1] >= 0) && (cell[0] < gridHeight) && (cell[1] < gridWidth)) {
-          drawcontext.fillStyle = color;
-          drawcontext.fillRect(originX + (cell[1] * cellWidth), originY + (cell[0] * cellHeight), cellWidth - 1, cellHeight - 1);
+        if ((cell[0] >= firstRow) && (cell[1] >= firstCol) && (cell[0] <= lastRow) && (cell[1] <= lastCol)) {
+          var grid = ((gridLineWidth + (gridLineWidth % 2)) / 2),
+              x = startX + ((cell[1] - firstCol) * colWidth) - firstColInset + grid,
+              y = startY + ((cell[0] - firstRow) * rowHeight) - firstRowInset + grid,
+              w = colWidth - gridLineWidth,
+              h = rowHeight - gridLineWidth;
+
+          if (+cell[0] === firstRow) {
+            y += firstRowInset - gridLineWidth;
+            h -= firstRowInset - gridLineWidth;
+          } else if (+cell[0] === lastRow) {
+            h -= rowHeight - firstRowInset - gridLineWidth;
+          }
+
+          if (+cell[1] === firstCol) {
+            x += firstColInset - gridLineWidth;
+            w -= firstColInset - gridLineWidth;
+          } else if (+cell[1] === lastCol) {
+            w -= colWidth - firstColInset - gridLineWidth;
+          }
+
+          if (color) {
+            drawcontext.fillStyle = color;
+            drawcontext.fillRect(x, y, w, h);
+          } else {
+            drawcontext.clearRect(x, y, w, h);
+          }
         }
       },
       
       drawCursor = function() {
         // draw/redraw/remove any current cursor
-        cursorContext.clearRect(originX, originY, gridWidth * cellWidth, gridHeight * cellHeight);
+        cursorContext.clearRect(startX, startY,
+                                ((lastCol - firstCol) * colWidth) + gridLineWidth,
+                                ((lastRow - firstRow) * rowHeight) + gridLineWidth);
         if (cursorCell) {
           for (var offset of cursorShape) {
             var cell = [cursorCell[0] + offset[0], cursorCell[1] + offset[1]];
             model.getCell(cell);
-            paintCell(cursorContext, cell, '#8080ff');
+            paintCell(cursorContext, cell, cursorColor);
           }
         }
       },
@@ -160,7 +240,7 @@ define(['jquery'], function($) {
         enable the renderer to reflect the current state of all cells.
       */
       cellChanged = function(cell, alive) {
-        paintCell(context, cell, alive ? '#000000' : '#ffffff');
+        paintCell(context, cell, alive ? aliveColor : null);
       },
 
       /**
