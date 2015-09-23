@@ -1,4 +1,4 @@
-define(function() {
+define(['app/sparse-2d-array'], function(sparse) {
 
   /**
     This provides a model for Conway's Game of Life, storing the state of a
@@ -14,7 +14,7 @@ define(function() {
 
   var gridHeight = 0,
       gridWidth = 0,
-      living = {},
+      living = undefined,
       callback = undefined,
 
       /**
@@ -26,15 +26,7 @@ define(function() {
         for (cell of cells) {
           // normalise row and column indices and check if currently dead
           if (!getCell(cell)) {
-            row = living[cell[0]];
-            if (!row) {
-              row = living[cell[0]] = {};
-              // include a non-enumerable 'count' property to keep track of entries
-              Object.defineProperty(row, 'count', { writable: true, value: 1 });
-            } else {
-              row.count++;
-            }
-            row[cell[1]] = true;
+            living.set(cell[0], cell[1], true);
             callback.fire(cell, true);
           }
         }
@@ -48,10 +40,7 @@ define(function() {
         for (var cell of cells) {
           // normalise row and column indices and check if currently alive
           if (getCell(cell)) {
-            delete living[cell[0]][cell[1]];
-            if (--living[cell[0]].count === 0) {
-              delete living[cell[0]];
-            }
+            living.delete(cell[0], cell[1]);
             callback.fire(cell, false);
           }
         }
@@ -68,7 +57,7 @@ define(function() {
       init = function(rows, cols, cellcallback) {
         gridHeight = rows;
         gridWidth = cols;
-        living = {};
+        living = sparse.new();
         callback = cellcallback;
       },
 
