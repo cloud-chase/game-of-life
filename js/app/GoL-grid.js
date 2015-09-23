@@ -1,18 +1,11 @@
-define(['jquery', 'app/GoL-model', 'app/GoL-shapes', 'app/renderers', 'jquery-ui'], function($, model, golshapes, renderers) {
+define(['jquery', 'app/GoL-model', 'app/GoL-shapes', 'app/renderers/renderers', 'app/engines/engines', 'jquery-ui'], function($, model, golshapes, renderers, engines) {
 
-  var possibleBirths=[],
-      dyingList=[],
-      birthList=[],
-      golStatus = {},
-      extraBirthsRate = 0,
-      extraDeathsRate = 0,
-      increaseFertilityRate = 0,
-      increaseDeathRate = 0,
-      data = [],
+  var golStatus = {},
       grid_rows = 0,
       grid_cols = 0,
       iterations = 0,
       renderer = 0,
+      engine = 0,
       the_doc = 0,
       callback = 0
 
@@ -94,60 +87,6 @@ define(['jquery', 'app/GoL-model', 'app/GoL-shapes', 'app/renderers', 'jquery-ui
         processShapes();
       },
 
-      checkGoLCellStates = function() {
-        var r, c, pcell, livens;
-
-        // process living cells to see if they might be deaths
-        model.forEachLiving(function(cell) {
-          celldata = data[cell[0]] && data[cell[0]][cell[1]];
-          livens = model.getCellNeighbours(cell, function(ncell) {
-            // add dead neighbours of the living cell to the possible births list
-            (possibleBirths[ncell[0]] || (possibleBirths[ncell[0]] = []))[ncell[1]] = true;
-          });
-
-          if ( (livens < 2) ||
-               (livens > 3) ||
-               ((extraDeathsRate > 0) && (Math.random() < extraDeathsRate)) ||
-               (celldata && (celldata.deathRate > 0) && (Math.random() < celldata.deathRate)) ) {
-            dyingList.push([cell[0], cell[1]]);
-            if (celldata) {
-              celldata.fertilityRate = 0; // reset
-              celldata.deathRate = 0;
-            }
-          } else if (celldata && (increaseDeathRate > 0)) {
-            celldata.deathRate += increaseDeathRate;
-          }
-        });
-
-        // process adjacent cells to see if they might be births
-        for (r in possibleBirths) {
-          for (c in possibleBirths[r]) {
-            pcell = [+r, +c];
-            celldata = data[+r] && data[+r][+c];
-            livens = model.getCellNeighbours(pcell);
-
-            if ( (livens === 3) ||
-                 ((extraBirthsRate > 0) && (Math.random() < extraBirthsRate)) ||
-                 (celldata && (celldata.fertilityRate > 0) && (Math.random() < celldata.fertilityRate)) ) {
-              birthList.push(pcell);
-              if (celldata) {
-                celldata.fertilityRate = 0; // reset
-                celldata.deathRate = 0;
-              }
-            } else if (celldata && (increaseFertilityRate > 0)) {
-              celldata.fertilityRate += increaseFertilityRate;
-            }
-          }
-          delete possibleBirths[r];
-        }
-
-        model.setAlive(birthList, true);
-        birthList.length = 0;
-
-        model.setAlive(dyingList, false);
-        dyingList.length = 0;
-      },
-
       golStatusMgr = function() {
         var timer,
           iterationTimes,
@@ -216,45 +155,38 @@ define(['jquery', 'app/GoL-model', 'app/GoL-shapes', 'app/renderers', 'jquery-ui
         iterations += 1;
         golStatus.golTiming(thisTime);
 
-        checkGoLCellStates();
+        engine && engine.stepForward && engine.stepForward();
       },
 
       // Constructor
       GoLGrid = function(doc, gridHeight, gridWidth, rows, cols) {
-        var r, c, rendererInfo;
-
-        callback = $.Callbacks();
+        var rendererInfo = renderers.getDefault(),
+            engineInfo = engines.getDefault();
 
         the_doc = doc;
         grid_rows = rows;
         grid_cols = cols;
-        rendererInfo = renderers.getDefault();
+
+        callback = $.Callbacks();
+        callback.add(function(cell, alive) {
+          renderer && renderer.cellChanged && renderer.cellChanged(cell, alive);
+        });
+
+        model.init(-1, -1, callback);
+
         require([rendererInfo.file], function(r) {
           renderer = r;
           renderer.init(the_doc, grid_rows, grid_cols, model);
-          callback.add(renderer.cellChanged);
+        });
+
+        require([engineInfo.file], function(e) {
+          engine = e;
+          engine.init(model);
         });
 
         $(".GoLGrid").css({"width": gridWidth, "height": gridHeight});
         $(".GoLGrid").resizable();
-        model.init(-1, -1, callback);
-
-        for (r = 0; r < rows; r++) {
-          data[r] = [];
-          for (c = 0; c < cols; c++) {
-            data[r][c] = { fertilityRate: 0, deathRate: 0 };
-          }
-        }
       },
-
-      // Public functions *** follow example aMethod ***
-      /*
-      // Sample exported method
-      GoLGrid.prototype.aMethod = function(one, two, three) {
-        This add's the method 'aMethod' to the exported GoLGrid object prototype.
-        It's parameters are one two and three.
-      };
-      */
 
       timerGoL = 0;
 
@@ -263,10 +195,10 @@ define(['jquery', 'app/GoL-model', 'app/GoL-shapes', 'app/renderers', 'jquery-ui
       alert('no quite ready yet');
     } else {
       if (timerGoL === 0) {
-        extraBirthsRate = $("#extraBirthsPerThousand").val() / 1000.0;
-        extraDeathsRate = $("#extraDeathsPerThoursand").val() / 1000.0;
-        increaseFertilityRate = $("#increaseFertilityPerThousand").val() / 1000.0;
-        increaseDeathRate = $("#increaseDeathPerThousand").val() / 1000.0;
+        engine && engine.setExtraBirthsRate && engine.setExtraBirthsRate($("#extraBirthsPerThousand").val() / 1000.0);
+        engine && engine.setExtraDeathsRate && engine.setExtraDeathsRate($("#extraDeathsPerThoursand").val() / 1000.0);
+        engine && engine.setIncreaseFertilityRate && engine.setIncreaseFertilityRate($("#increaseFertilityPerThousand").val() / 1000.0);
+        engine && engine.setIncreaseDeathRate && engine.setIncreaseDeathRate($("#increaseDeathPerThousand").val() / 1000.0);
         timerGoL = setInterval(function(){goLStep();},$("#txtInterval").val());
         $("#startStopBtn").attr('value', 'Stop');
         $("#status").text("Status: Running");
@@ -301,7 +233,7 @@ define(['jquery', 'app/GoL-model', 'app/GoL-shapes', 'app/renderers', 'jquery-ui
     });
     renderers.list().forEach(function(r) {
       var selected = '';
-      if (r.defaultRenderer) {
+      if (r.default) {
         selected = 'selected="true"';
       }
       $renderers.append($('<option ' + selected + '></option>').val(r.file).html(r.name));
@@ -312,7 +244,6 @@ define(['jquery', 'app/GoL-model', 'app/GoL-shapes', 'app/renderers', 'jquery-ui
         renderer = r;
         renderer.init(the_doc, grid_rows, grid_cols, model);
         renderer.setCursorShape(shapes[parseInt($('#shapes').val())].cells);
-        callback.add(renderer.cellChanged);
       });
     });
 
