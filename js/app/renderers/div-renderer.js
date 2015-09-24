@@ -107,7 +107,7 @@ define(function() {
           toggleShape(this, cursorShape, 'prenatal', true);
         });
 
-        model.forEachLiving(function(cell) {
+        model.forEachLiving(function(cell, state) {
           divs[cell[0]] &&
           divs[cell[0]][cell[1]] &&
           divs[cell[0]][cell[1]].addClass('alive');
@@ -120,10 +120,10 @@ define(function() {
         method should be called every time the state of a cell changes, to
         enable the renderer to reflect the current state of all cells.
       */
-      cellChanged = function(cell, alive) {
+      cellChanged = function(cell, state) {
         divs[cell[0]] &&
         divs[cell[0]][cell[1]] &&
-        divs[cell[0]][cell[1]].toggleClass('alive', alive);
+        divs[cell[0]][cell[1]].toggleClass('alive', state);
       },
 
       /**
