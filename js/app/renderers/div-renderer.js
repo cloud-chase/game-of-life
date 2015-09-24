@@ -12,7 +12,9 @@ define(function() {
       init = function(doc, rows, cols, model) {
 
         var grid = doc.getElementById("grid1"),
-            row, cell, background_grid, background_row, foreground_grid;
+            row, cell, background_grid, background_row, background_cell, foreground_grid,
+            rowH = (100 / rows) + "%",
+            colW = (100 / cols) + "%";
 
         addDivTo = function(doc, hostDiv, newDivClass, newDivID) {
           var newDiv = doc.createElement("Div");
@@ -27,23 +29,25 @@ define(function() {
 
         for (var r = 0; r < rows; r++) {
           background_row = addDivTo(doc, background_grid, 'GoLRow block','');
+          background_row.style.height = rowH;
           row = addDivTo(doc, foreground_grid, "GoLRow block", "r" + r.toString());
           row.visible = true;
+          row.style.height = rowH;
+          console.log('setting row height to: ' + rowH + ', actual=' + row.style.height);
           divs[r] = [];
 
           for (var c = 0; c < cols; c++) {
-            addDivTo(doc, background_row, 'GoLCell block','');
+            background_cell = addDivTo(doc, background_row, 'GoLCell block','');
+            background_cell.style.width = colW;
             cell = addDivTo(doc, row, "GoLCell block", "r" + r.toString() + "c" + c.toString());
             cell.visible = true;
             cell.setAttribute('row', r); // chose this to keep jquery in thie file to minimum
             cell.setAttribute('col', c); // javascript dom
+            cell.style.width = colW;
 
             divs[r][c] = $(cell);
           }
         }
-
-        $(".GoLRow").css({ width: "100%", height: (100 / rows) + "%" });
-        $(".GoLCell").css({ width: (100 / cols) + "%", height: "100%" });
 
         var mouseDown = false,
             toggleShapeInner = function(cell, toggleClass, forceOff) {
