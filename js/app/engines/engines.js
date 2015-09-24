@@ -6,6 +6,10 @@ define(function() {
           name: 'Game Of Life',
           default: true,
           file: 'app/engines/game-of-life'
+        },
+        {
+          name: 'Langton\'s Ant',
+          file: 'app/engines/langtons-ant'
         }
       ];
   
