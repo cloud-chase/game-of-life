@@ -6,9 +6,13 @@ define(['jquery'], function($) {
       firstRow, firstCol, lastRow, lastCol, firstRowInset, firstColInset,
       model, context, cursorContext,
       gridColor = '#e6e6fa',
-      aliveColor = '#202066',
+      aliveColor = ['#202066', '#aa2200', '#447722', '#5511aa', '#99aa22', '#22aa99', '#994477'],
       cursorColor = '#8080ff',
       gridLineWidth = 1,
+
+      statecolor = function(value) {
+        return value ? aliveColor[(typeof value === 'number') ? ((value - 1) % aliveColor.length) : 0] : null;
+      },
 
       /**
         Initialise the renderer. The HTML document is supplied, and the rows
@@ -82,7 +86,7 @@ define(['jquery'], function($) {
               context.stroke();
 
               // draw the cell states
-              model.forEachLiving(function(cell, state) { paintCell(context, cell, aliveColor); });
+              model.forEachLiving(function(cell, state) { paintCell(context, cell, statecolor(state)); });
 
               // draw the cursor
               drawCursor();
@@ -240,7 +244,7 @@ define(['jquery'], function($) {
         enable the renderer to reflect the current state of all cells.
       */
       cellChanged = function(cell, state) {
-        paintCell(context, cell, state ? aliveColor : null);
+        paintCell(context, cell, statecolor(state));
       },
 
       /**
