@@ -20,8 +20,8 @@ define(['app/sparse-2d-array'], function(sparse) {
       addLiving = function(cells, value) {
         var row, cell;
         for (cell of cells) {
-          // normalise row and column indices and check if currently dead
-          if (!getCell(cell)) {
+          // normalise row and column indices and check whether changing
+          if (getCell(cell) !== value) {
             living.set(cell[0], cell[1], value);
             callback.fire(cell, value);
           }
@@ -34,7 +34,7 @@ define(['app/sparse-2d-array'], function(sparse) {
       */
       removeLiving = function(cells) {
         for (var cell of cells) {
-          // normalise row and column indices and check if currently alive
+          // normalise row and column indices and check whether changing
           if (getCell(cell)) {
             living.delete(cell[0], cell[1]);
             callback.fire(cell, false);
