@@ -12,7 +12,7 @@ define(function() {
         slice = self[a] = {};
         // include a non-enumerable 'count' property to keep track of entries
         Object.defineProperty(slice, 'count', { writable: true, value: 1 });
-      } else {
+      } else if (!slice[b]) {
         slice.count++;
       }
       slice[b] = value;
