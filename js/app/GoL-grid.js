@@ -151,30 +151,35 @@ define(['jquery', 'app/GoL-model', 'app/GoL-shapes', 'app/renderers/renderers', 
 
       goLStep = function()
       {
-        var now;
-        
-        if (interval) {
-          now = new Date().getTime();
+        var _golStep = function() {
+          var now;
 
-          if (now > nextyield) {
-            // we yield every 100ms for politeness, cancelling any backlog
-            nextstep = now;
-            nextyield = nextstep + 100;
-            setTimeout(goLStep, 1);
-          } else if (now < nextstep) {
-            // we've some time to wait, so take a nap
-            nextyield = nextstep + 100;
-            setTimeout(goLStep, nextstep - now);
-          } else {
-            // our next step is already due (or overdue) so press on
-            iterations++;
-            nextstep += interval;
-            golStatus.golTiming(now);
-            engine && engine.stepForward && engine.stepForward();
+          if (interval) {
+            now = new Date().getTime();
 
-            // ideally this would be tail recursion
-            goLStep();
+            if (now > nextyield) {
+              // we yield every 100ms for politeness, cancelling any backlog
+              nextstep = now;
+              nextyield = nextstep + 100;
+              setTimeout(goLStep, 1);
+            } else if (now < nextstep) {
+              // we've some time to wait, so take a nap
+              nextyield = nextstep + 100;
+              setTimeout(goLStep, nextstep - now);
+            } else {
+              // our next step is already due (or overdue) so press on
+              iterations++;
+              nextstep += interval;
+              golStatus.golTiming(now);
+              engine && engine.stepForward && engine.stepForward();
+
+              return _golStep;
+            }
           }
+        };
+        var res = _golStep;
+        while (res) {
+          res = _golStep();
         }
       },
 
@@ -217,10 +222,10 @@ define(['jquery', 'app/GoL-model', 'app/GoL-shapes', 'app/renderers/renderers', 
         engine && engine.setExtraDeathsRate && engine.setExtraDeathsRate($("#extraDeathsPerThoursand").val() / 1000.0);
         engine && engine.setIncreaseFertilityRate && engine.setIncreaseFertilityRate($("#increaseFertilityPerThousand").val() / 1000.0);
         engine && engine.setIncreaseDeathRate && engine.setIncreaseDeathRate($("#increaseDeathPerThousand").val() / 1000.0);
-        
+
         $("#startStopBtn").attr('value', 'Stop');
         $("#status").text("Status: Running");
-        
+
         interval = +$("#txtInterval").val();
         nextstep = new Date().getTime();
         nextyield = nextstep + 100;
@@ -229,7 +234,7 @@ define(['jquery', 'app/GoL-model', 'app/GoL-shapes', 'app/renderers/renderers', 
       } else {
         interval = 0;
         golStatus.stop();
-        
+
         $("#startStopBtn").attr('value', 'Start');
         $("#status").text("Status: Stopped");
       }
