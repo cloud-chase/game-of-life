@@ -7,7 +7,10 @@ define(['jquery', 'app/GoL-model', 'app/GoL-shapes', 'app/renderers/renderers', 
       renderer = 0,
       engine = 0,
       the_doc = 0,
-      callback = 0
+      callback = 0,
+      interval = 0,
+      nextstep = 0,
+      nextyield = 0,
 
       shapes = [
         { category: 'default', name: 'dot', width: '1', height: '1', rule: 'B3/S23', shape: 'o!'},
@@ -148,14 +151,31 @@ define(['jquery', 'app/GoL-model', 'app/GoL-shapes', 'app/renderers/renderers', 
 
       goLStep = function()
       {
-        var d, thisTime,
-          d = new Date(),
-          thisTime = d.getTime(); // milliseconds since 01/01 1970
+        var now;
+        
+        if (interval) {
+          now = new Date().getTime();
 
-        iterations += 1;
-        golStatus.golTiming(thisTime);
+          if (now > nextyield) {
+            // we yield every 100ms for politeness, cancelling any backlog
+            nextstep = now;
+            nextyield = nextstep + 100;
+            setTimeout(goLStep, 1);
+          } else if (now < nextstep) {
+            // we've some time to wait, so take a nap
+            nextyield = nextstep + 100;
+            setTimeout(goLStep, nextstep - now);
+          } else {
+            // our next step is already due (or overdue) so press on
+            iterations++;
+            nextstep += interval;
+            golStatus.golTiming(now);
+            engine && engine.stepForward && engine.stepForward();
 
-        engine && engine.stepForward && engine.stepForward();
+            // ideally this would be tail recursion
+            goLStep();
+          }
+        }
       },
 
       // Constructor
@@ -186,27 +206,30 @@ define(['jquery', 'app/GoL-model', 'app/GoL-shapes', 'app/renderers/renderers', 
 
         $(".GoLGrid").css({"width": gridWidth, "height": gridHeight});
         $(".GoLGrid").resizable();
-      },
-
-      timerGoL = 0;
+      };
 
   GoLGrid.prototype.startStop = function() {
     if (renderer === 0) {
       alert('no quite ready yet');
     } else {
-      if (timerGoL === 0) {
+      if (!interval) {
         engine && engine.setExtraBirthsRate && engine.setExtraBirthsRate($("#extraBirthsPerThousand").val() / 1000.0);
         engine && engine.setExtraDeathsRate && engine.setExtraDeathsRate($("#extraDeathsPerThoursand").val() / 1000.0);
         engine && engine.setIncreaseFertilityRate && engine.setIncreaseFertilityRate($("#increaseFertilityPerThousand").val() / 1000.0);
         engine && engine.setIncreaseDeathRate && engine.setIncreaseDeathRate($("#increaseDeathPerThousand").val() / 1000.0);
-        timerGoL = setInterval(function(){goLStep();},$("#txtInterval").val());
+        
         $("#startStopBtn").attr('value', 'Stop');
         $("#status").text("Status: Running");
+        
+        interval = +$("#txtInterval").val();
+        nextstep = new Date().getTime();
+        nextyield = nextstep + 100;
         golStatus.start();
+        goLStep();
       } else {
-        clearInterval(timerGoL);
+        interval = 0;
         golStatus.stop();
-        timerGoL = 0;
+        
         $("#startStopBtn").attr('value', 'Start');
         $("#status").text("Status: Stopped");
       }
