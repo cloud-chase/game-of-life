@@ -8,51 +8,27 @@
 	</div>
 <br>
 <div class="container">
-	<div class='split-2 left'>
+	<span class='split-2 left'>
 		<div>
-			<span class="split-2 left fix" id="activeCell">Active Cell: </span>
-			<span class="split-2 right fix" id="status">Status: Stopped</span>
-			<span class="split-2 left fix" id="">Actual Timing: <span id="timing-value"></span>ms</span>
-			<span class="split-2 right fix" id="">Average Timing: <span id="timing-average"></span>ms</span>
-		</div>
-		<div>
+			<span class="split-2 fix" id="activeCell">Active Cell: </span>
+			<span class="split-2 fix" id="status">Status: Stopped</span>
+			<span class="split-2 fix" id="">Actual Timing: <span id="timing-value"></span>ms</span>
+			<span class="split-2 fix" id="">Average Timing: <span id="timing-average"></span>ms</span>
+			<span class="split-2 fix" id="">Iterations: <span id="iterations"></span></span>
+			<span class="split-2 fix" id="">Life: <span id="life-count"></span></span>
 			<span class="split-2">
 				Interval(ms): <input type="text" id="txtInterval" value="20"/>
 				<input id="startStopBtn" type="button" value="Start" onclick="g.startStop()"/>
 				<input id="clearBtn" type="button" value="Clear" onclick="g.clear()"/>
-			</span>
-			<span class="split-2">Select a shape:
-				<select id="shapes">
-				</select>
 			</span>
 			<span class="split-2">Select a renderer:
 				<select id="renderers">
 				</select>
 			</span>
 		</div>
-	</div>
-	<div class='split-2 right'>
-		<span id="extraBirthsDeaths">
-			<span class="split-2">
-				Extra random births on test (per 1000): <input type="text" id="extraBirthsPerThousand" value="0"/>
-			</span>
-			<span class="split-2">
-				Extra random deaths on test (per 1000): <input type="text" id="extraDeathsPerThoursand" value="0"/>
-			</span>
-		</span>
-		<span id="cellFertility">
-			<span class="split-2">
-				Increase births on test (per 1000): <input type="text" id="increaseFertilityPerThousand" value="0" />
-			</span>
-			<span class="split-2">
-				Increase deaths on test (per 1000): <input type="text" id="increaseDeathPerThousand" value="0" />
-			</span>
-		</span>
-		<div>
-			<span class="split-2 fix" id="">Iterations: <span id="iterations"></span></span>
-			<span class="split-2 fix" id="">Life: <span id="life-count"></span></span>
-		</div>
-	</div>
+	</span>
+	<span class='split-2 model-properties'>
+	</span>
 </div>
 </body>
 </html>

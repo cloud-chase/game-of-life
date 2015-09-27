@@ -90,5 +90,10 @@
   width: 59%;
 }
 input[type='text'] {
-  width: 20px;
+  width: 50px;
+}
+
+.model-property-caption {
+  min-width: 150px;
+  display: inline-block;
 }
