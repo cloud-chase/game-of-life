@@ -118,12 +118,12 @@ define(['jquery', 'app/GoL-model', 'app/GoL-shapes', 'app/renderers/renderers', 
             if (count > 0) {
               output = iterationTimes.reduce(function(a,b) { return a + b; }) / count;
               iterationTimes = [];
-              $timing.text(output.toFixed(2));
+              $timing.text(output.toFixed(3));
             }
             $iterations.text('' + iterations);
             $lifecount.text('' + model.getNumberLiving());
             if (iterations > 0) {
-              $timingAverage.text(((lastTime - firstTime) / iterations).toFixed(2));
+              $timingAverage.text(((lastTime - firstTime) / iterations).toFixed(3));
             }
           };
 
