@@ -1,7 +1,8 @@
 
 define(['app/sparse-2d-array', 'app/GoL-shapes', 'app/property-bag'], function(sparse, golshapes, propertyBag) {
 
-  var extraBirthsRate = 0,
+  var $propbagHost = 0,
+    extraBirthsRate = 0,
     extraDeathsRate = 0,
     increaseFertilityRate = 0,
     increaseDeathRate = 0,
@@ -99,10 +100,13 @@ define(['app/sparse-2d-array', 'app/GoL-shapes', 'app/property-bag'], function(s
   that.init = function(amodel, engineCursorChanged, $propertyHost) {
     model = amodel;
 
-    propertyBag.addTextProperty('extraBirths', 'Extra births / 1000', setExtraBirthsRate);
-    propertyBag.addTextProperty('extraDeaths', 'Extra deaths / 1000', setExtraDeathsRate);
-    propertyBag.addTextProperty('increaseBirths', 'Increase births / 1000', setIncreaseFertilityRateRate);
-    propertyBag.addTextProperty('increaseDeaths', 'Extra births / 1000', setIncreaseDeathRate);
+    $propbagHost = $propertyHost;
+
+    propertyBag.init();
+    propertyBag.addTextProperty('extraBirths', 'Extra births / 1000', 0, setExtraBirthsRate);
+    propertyBag.addTextProperty('extraDeaths', 'Extra deaths / 1000', 0, setExtraDeathsRate);
+    propertyBag.addTextProperty('increaseBirths', 'Increase births / 1000', 0, setIncreaseFertilityRateRate);
+    propertyBag.addTextProperty('increaseDeaths', 'Extra births / 1000', 0, setIncreaseDeathRate);
 
     // shape size limit 250 x 250 also applied in grunt build
     initShapes(250, 250);
@@ -111,6 +115,10 @@ define(['app/sparse-2d-array', 'app/GoL-shapes', 'app/property-bag'], function(s
     });
 
     propertyBag.createUI($propertyHost);
+  };
+
+  that.clear = function() {
+    $propbagHost.empty();
   };
 
   that.stepForward = function() {

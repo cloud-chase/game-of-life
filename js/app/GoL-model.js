@@ -134,7 +134,7 @@ define(['app/sparse-2d-array'], function(sparse) {
               state && result++;
               handler && handler(cell);
             };
-        
+
         cell[0]--; handle();
         cell[1]--; handle();
         cell[0]++; handle();
@@ -144,7 +144,7 @@ define(['app/sparse-2d-array'], function(sparse) {
         cell[0]--; handle();
         cell[0]--; handle();
         cell[1]--; cell[0]++;
-        
+
         return result;
       };
 
