@@ -136,7 +136,7 @@ define(['jquery', 'app/GoL-model', 'app/renderers/renderers', 'app/engines/engin
 
         require([rendererInfo.file], function(r) {
           renderer = r;
-          renderer.init(the_doc, grid_rows, grid_cols, model);
+          renderer.init(the_doc, grid_rows, grid_cols, model, $("#grid1"));
         });
 
         require([engineInfo.file], function(e) {
@@ -192,11 +192,11 @@ define(['jquery', 'app/GoL-model', 'app/renderers/renderers', 'app/engines/engin
     });
     
     $renderers.on('change', function(e) {
-      $("#grid1").empty();
-      
+      renderer && renderer.clear();
+
       require([this.value], function(r) {
         renderer = r;
-        renderer.init(the_doc, grid_rows, grid_cols, model);
+        renderer.init(the_doc, grid_rows, grid_cols, model, $("#grid1"));
         renderer.setCursorShape(cursorShape.cells);
       });
     });

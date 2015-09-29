@@ -4,6 +4,7 @@ define(['jquery'], function($) {
       cursorCell,
       startX, startY, rowHeight, colWidth,
       firstRow, firstCol, lastRow, lastCol, firstRowInset, firstColInset,
+      nodes = [],
       model, context, cursorContext,
       gridColor = '#e6e6fa',
       aliveColor = ['#202066', '#aa2200', '#447722', '#5511aa', '#99aa22', '#22aa99', '#994477'],
@@ -19,9 +20,9 @@ define(['jquery'], function($) {
         and columns that the rendered grid should display, and a model which
         the renderer will use.
       */
-      init = function(doc, rows, cols, amodel) {
+      init = function(doc, rows, cols, amodel, container) {
 
-        var $grid = $('#grid1'),
+        var $grid = $(container),
             canvas = doc.createElement("Canvas"),
             $canvas = $(canvas),
             cursorCanvas = doc.createElement("Canvas"),
@@ -94,6 +95,8 @@ define(['jquery'], function($) {
 
         $grid.append(canvas);
         $grid.append(cursorCanvas);
+        nodes.push(canvas);
+        nodes.push(cursorCanvas);
         $cursorCanvas.css({ position: 'absolute', left: '0', right: '0' });
         context = canvas.getContext('2d');
         cursorContext = cursorCanvas.getContext('2d');
@@ -192,6 +195,17 @@ define(['jquery'], function($) {
           }
         });
       },
+      
+      /**
+        Reset the renderer, removing any DOM constructs that were created.
+      */
+      clear = function() {
+        for (var node of nodes) {
+          node.parentNode.removeChild(node);
+        }
+        nodes.length = 0;
+        model = context = cursorContext = undefined;
+      },
 
       paintCell = function(drawcontext, cell, color) {
         if ((cell[0] >= firstRow) && (cell[1] >= firstCol) && (cell[0] <= lastRow) && (cell[1] <= lastCol)) {
@@ -225,15 +239,17 @@ define(['jquery'], function($) {
       },
       
       drawCursor = function() {
-        // draw/redraw/remove any current cursor
-        cursorContext.clearRect(startX, startY,
-                                ((lastCol - firstCol) * colWidth) + gridLineWidth,
-                                ((lastRow - firstRow) * rowHeight) + gridLineWidth);
-        if (cursorCell) {
-          for (var offset of cursorShape) {
-            var cell = [cursorCell[0] + offset[0], cursorCell[1] + offset[1]];
-            model.getCell(cell);
-            paintCell(cursorContext, cell, cursorColor);
+        if (cursorContext) {
+          // draw/redraw/remove any current cursor
+          cursorContext.clearRect(startX, startY,
+                                  ((lastCol - firstCol) * colWidth) + gridLineWidth,
+                                  ((lastRow - firstRow) * rowHeight) + gridLineWidth);
+          if (cursorCell) {
+            for (var offset of cursorShape) {
+              var cell = [cursorCell[0] + offset[0], cursorCell[1] + offset[1]];
+              model.getCell(cell);
+              paintCell(cursorContext, cell, cursorColor);
+            }
           }
         }
       },

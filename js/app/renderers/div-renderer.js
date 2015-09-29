@@ -2,6 +2,7 @@ define(function() {
 
   // this is the renderer code, separated from the game function code
   var cursorShape = [[0,0]],
+      nodes = [],
       divs = [],
 
       /**
@@ -9,10 +10,9 @@ define(function() {
         and columns that the rendered grid should display, and a model which
         the renderer will use.
       */
-      init = function(doc, rows, cols, model) {
+      init = function(doc, rows, cols, model, grid) {
 
-        var grid = doc.getElementById("grid1"),
-            row, cell, background_grid, background_row, background_cell, foreground_grid,
+        var row, cell, background_grid, background_row, background_cell, foreground_grid,
             rowH = (100 / rows) + "%",
             colW = (100 / cols) + "%";
 
@@ -25,7 +25,9 @@ define(function() {
         };
 
         background_grid = addDivTo(doc, grid, 'background-grid', '');
-        foreground_grid = addDivTo(doc, grid, 'foreground-grid', '')
+        foreground_grid = addDivTo(doc, grid, 'foreground-grid', '');
+        nodes.push(background_grid);
+        nodes.push(foreground_grid);
 
         for (var r = 0; r < rows; r++) {
           background_row = addDivTo(doc, background_grid, 'GoLRow block','');
@@ -116,6 +118,17 @@ define(function() {
       },
 
       /**
+        Reset the renderer, removing any DOM constructs that were created.
+      */
+      clear = function() {
+        for (var node of nodes) {
+          node.parentNode.removeChild(node);
+        }
+        nodes.length = 0;
+        divs.length = 0;
+      },
+
+      /**
         Register the change of state of a cell [row, column, alive]. This
         method should be called every time the state of a cell changes, to
         enable the renderer to reflect the current state of all cells.
@@ -138,6 +151,7 @@ define(function() {
 
   return {
     init: init,
+    clear: clear,
     cellChanged: cellChanged,
     setCursorShape: setCursorShape,
     name: 'div-renderer'
