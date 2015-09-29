@@ -11,6 +11,7 @@ define(['jquery'], function($) {
           var selected = '';
           if (option.default) {
             selected = 'selected="true"';
+            prop.callback(option.default);
           }
 
           $select.append($('<option ' + selected + '></option>').val(index).html(option.caption));
@@ -21,11 +22,13 @@ define(['jquery'], function($) {
 
       addTextUI = function($host, prop) {
         var $input = $host.append($('<input type="text" id="' + prop.id + '" value="' + prop.initialValue + '" />')).find('input');
+        prop.callback(prop.initialValue);
         return $input;
       },
 
       addTextareaUI = function($host, prop) {
         var $input = $host.append($('<textarea id="' + prop.id + '" cols="40" rows="5">' + prop.initialValue + '</textarea>')).find('textarea');
+        prop.callback(prop.initialValue);
         return $input;
       };
 
