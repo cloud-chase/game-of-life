@@ -108,6 +108,10 @@ define(['jquery', 'app/GoL-model', 'app/renderers/renderers', 'app/engines/engin
         }
       },
 
+      setEngine = function(engineInfo) {
+
+      },
+
       // Constructor
       GoLGrid = function(doc, gridHeight, gridWidth, rows, cols) {
         var rendererInfo = renderers.getDefault(),
@@ -174,7 +178,9 @@ define(['jquery', 'app/GoL-model', 'app/renderers/renderers', 'app/engines/engin
   };
 
   $(function() {
-    var index = 0,  $renderers = $('#renderers');
+    var index = 0,
+      $renderers = $('#renderers'),
+      $engines = $('#engines');
 
     golStatus = golStatusMgr();
     renderers.list().forEach(function(r) {
@@ -190,6 +196,29 @@ define(['jquery', 'app/GoL-model', 'app/renderers/renderers', 'app/engines/engin
         renderer = r;
         renderer.init(the_doc, grid_rows, grid_cols, model);
         renderer.setCursorShape(cursorShape.cells);
+      });
+    });
+
+    engines.list().forEach(function(e) {
+      var selected = '';
+      if (e.default) {
+        selected = 'selected="true"';
+      }
+      $engines.append($('<option ' + selected + '></option>').val(e.file).html(e.name));
+    });
+    $engines.on('change', function(e) {
+      GoLGrid.prototype.clear();
+      engine.clear();
+
+      require([this.value], function(e) {
+        engineCursorChanged = $.Callbacks();
+        engineCursorChanged.add(function(shape) {
+          cursosrShape = shape;
+          renderer.setCursorShape(shape.cells);
+        });
+
+        engine = e;
+        engine.init(model, engineCursorChanged, $(".model-properties"));
       });
     });
   });
