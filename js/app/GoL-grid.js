@@ -9,7 +9,7 @@ define(['jquery', 'app/GoL-model', 'app/renderers/renderers', 'app/engines/engin
       engine = 0,
       the_doc = 0,
       cellChangedCallback = 0,
-      engineCursorChanged = 0,
+      cursorChangedCallback = 0,
       cursosrShape = 0,
       interval = 0,
       nextstep = 0,
@@ -117,14 +117,20 @@ define(['jquery', 'app/GoL-model', 'app/renderers/renderers', 'app/engines/engin
         var rendererInfo = renderers.getDefault(),
             engineInfo = engines.getDefault();
 
+        the_doc = doc;
         grid_rows = rows;
         grid_cols = cols;
 
-        the_doc = doc;
         cellChangedCallback = $.Callbacks();
         cellChangedCallback.add(function(cell, alive) {
           renderer && renderer.cellChanged && renderer.cellChanged(cell, alive);
         });
+        
+        cursorChangedCallback = $.Callbacks();
+        cursorChangedCallback.add(function(shape) {
+          cursosrShape = shape;
+          renderer.setCursorShape(shape.cells);
+        });        
 
         model.init(-1, -1, cellChangedCallback);
 
@@ -134,14 +140,8 @@ define(['jquery', 'app/GoL-model', 'app/renderers/renderers', 'app/engines/engin
         });
 
         require([engineInfo.file], function(e) {
-          engineCursorChanged = $.Callbacks();
-          engineCursorChanged.add(function(shape) {
-            cursosrShape = shape;
-            renderer.setCursorShape(shape.cells);
-          });
-
           engine = e;
-          engine.init(model, engineCursorChanged, $(".model-properties"));
+          engine.init(model, cursorChangedCallback, $(".model-properties"));
         });
 
         $(".GoLGrid").css({"width": gridWidth, "height": gridHeight});
