@@ -7,6 +7,7 @@ define(['jquery', 'app/GoL-model', 'app/renderers/renderers', 'app/engines/engin
       iterations = 0,
       renderer = 0,
       engine = 0,
+      cursorShape = [[0, 0]],
       the_doc = 0,
       cellChangedCallback = 0,
       cursorChangedCallback = 0,
@@ -127,7 +128,8 @@ define(['jquery', 'app/GoL-model', 'app/renderers/renderers', 'app/engines/engin
         
         cursorChangedCallback = $.Callbacks();
         cursorChangedCallback.add(function(shape) {
-          renderer.setCursorShape(shape.cells);
+          cursorShape = shape;
+          renderer.setCursorShape(shape);
         });        
 
         model.init(-1, -1, cellChangedCallback);
@@ -139,7 +141,7 @@ define(['jquery', 'app/GoL-model', 'app/renderers/renderers', 'app/engines/engin
 
         require([engineInfo.file], function(e) {
           engine = e;
-          engine.init(model, cursorChangedCallback, $(".model-properties"));
+          engine.init(model, cursorShape, cursorChangedCallback, $(".model-properties"));
         });
 
         $(".GoLGrid").css({"width": gridWidth, "height": gridHeight});
@@ -180,6 +182,7 @@ define(['jquery', 'app/GoL-model', 'app/renderers/renderers', 'app/engines/engin
         $engines = $('#engines');
 
     golStatus = golStatusMgr();
+    
     renderers.list().forEach(function(r) {
       var selected = '';
       if (r.default) {
@@ -190,6 +193,7 @@ define(['jquery', 'app/GoL-model', 'app/renderers/renderers', 'app/engines/engin
     
     $renderers.on('change', function(e) {
       $("#grid1").empty();
+      
       require([this.value], function(r) {
         renderer = r;
         renderer.init(the_doc, grid_rows, grid_cols, model);
@@ -204,19 +208,14 @@ define(['jquery', 'app/GoL-model', 'app/renderers/renderers', 'app/engines/engin
       }
       $engines.append($('<option ' + selected + '></option>').val(e.file).html(e.name));
     });
+    
     $engines.on('change', function(e) {
       GoLGrid.prototype.clear();
       engine.clear();
 
       require([this.value], function(e) {
-        engineCursorChanged = $.Callbacks();
-        engineCursorChanged.add(function(shape) {
-          cursosrShape = shape;
-          renderer.setCursorShape(shape.cells);
-        });
-
         engine = e;
-        engine.init(model, engineCursorChanged, $(".model-properties"));
+        engine.init(model, cursorShape, cursorChangedCallback, $(".model-properties"));
       });
     });
   });

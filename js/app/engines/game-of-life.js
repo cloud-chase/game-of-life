@@ -97,7 +97,7 @@ define(['app/sparse-2d-array', 'app/GoL-shapes', 'app/property-bag'], function(s
       increaseDeathRate = parseInt(newvalue)/1000;
     };
 
-  that.init = function(amodel, engineCursorChanged, $propertyHost) {
+  that.init = function(amodel, cursorShape, engineCursorChanged, $propertyHost) {
     model = amodel;
 
     $propbagHost = $propertyHost;
@@ -111,7 +111,7 @@ define(['app/sparse-2d-array', 'app/GoL-shapes', 'app/property-bag'], function(s
     // shape size limit 250 x 250 also applied in grunt build
     initShapes(250, 250);
     propertyBag.addDropdownProperty('shapes', 'Shape', shapes, function(index) {
-      engineCursorChanged.fire(shapes[index]);
+      engineCursorChanged.fire(shapes[index].cells);
     });
 
     propertyBag.createUI($propertyHost);
