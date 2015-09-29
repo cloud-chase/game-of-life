@@ -1,38 +1,40 @@
 <html>
 <head>
-<link rel="stylesheet" type="text/css" href="css/GoL.css" />
-<script data-main="js/app" src="js/lib/requirejs/require.js"></script>
+  <link rel="stylesheet" type="text/css" href="css/GoL.css" />
+  <script data-main="js/app" src="js/lib/requirejs/require.js"></script>
 </head>
 <body>
-	<div id="grid1" class="GoLGrid block">
-	</div>
-<br>
-<div class="container">
-	<span class='split-2 left'>
-		<div>
-			<span class="split-2 fix" id="activeCell">Active Cell: </span>
-			<span class="split-2 fix" id="status">Status: Stopped</span>
-			<span class="split-2 fix" id="">Actual Timing: <span id="timing-value"></span>ms</span>
-			<span class="split-2 fix" id="">Average Timing: <span id="timing-average"></span>ms</span>
-			<span class="split-2 fix" id="">Iterations: <span id="iterations"></span></span>
-			<span class="split-2 fix" id="">Life: <span id="life-count"></span></span>
-			<span class="split-2">
-				Interval(ms): <input type="text" id="txtInterval" value="10"/>
-				<input id="startStopBtn" type="button" value="Start" onclick="g.startStop()"/>
-				<input id="clearBtn" type="button" value="Clear" onclick="g.clear()"/>
-			</span>
-			<span class="split-2">Select a renderer:
-				<select id="renderers">
-				</select>
-			</span>
-			<span class="split-2">Select an engine:
-				<select id="engines">
-				</select>
-			</span>
-		</div>
-	</span>
-	<span class='split-2 model-properties'>
-	</span>
-</div>
+  <div id="grid1" class="GoLGrid block">
+  </div>
+  <br>
+  
+  <div class="container">
+    <div class='split-3 left'>
+      <div class="fix" id="activeCell">Active Cell: </div>
+      <div>Select an engine:
+        <select id="engines"></select>
+      </div>
+      <div>Select a renderer:
+        <select id="renderers"></select>
+      </div>
+      <div>
+        Interval(ms):
+        <input type="text" id="txtInterval" value="10"/>
+        <input id="startStopBtn" type="button" value="Start" onclick="g.startStop()"/>
+        <input id="clearBtn" type="button" value="Clear" onclick="g.clear()"/>
+      </div>
+    </div>
+    
+    <div class='split-3 left'>
+      <div class="fix">Status: <span id="status">Stopped</span></div>
+      <div class="fix">Actual Timing: <span id="timing-value"></span>ms</div>
+      <div class="fix">Average Timing: <span id="timing-average"></span>ms</div>
+      <div class="fix">Iterations: <span id="iterations"></span></div>
+      <div class="fix">Life: <span id="life-count"></span></div>
+    </div>
+    
+    <div class='split-3 model-properties'>
+    </div>
+  </div>
 </body>
 </html>

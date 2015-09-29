@@ -66,17 +66,9 @@
   height: 20px;
   overflow: hidden; }
 
-.split-2 {
+.split-3 {
   display: inline-block;
-  width: 49%; }
-
-.split-2-5 {
-  display: inline-block;
-  width: 39%; }
-
-.split-3-5 {
-  display: inline-block;
-  width: 59%; }
+  width: 33%; }
 
 input[type='text'] {
   width: 50px; }
