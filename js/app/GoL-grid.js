@@ -210,8 +210,11 @@ define(['jquery', 'app/GoL-model', 'app/renderers/renderers', 'app/engines/engin
     });
     
     $engines.on('change', function(e) {
+      var old = engine;
+      engine = undefined;
+      
       GoLGrid.prototype.clear();
-      engine.clear();
+      old.clear();
 
       require([this.value], function(e) {
         engine = e;
