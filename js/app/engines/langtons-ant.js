@@ -2,26 +2,22 @@
 define(['app/sparse-2d-array', 'app/property-bag'], function(sparse, propertyBag) {
 
   var ants = [],  // each ant consists of [row, col, ant state, turns]
-      $propbagHost = 0,
+      properties = propertyBag.new(),
       that = {};
 
   that.init = function(amodel, cursorShape, engineCursorChanged, $propertyHost) {
     model = amodel;
     engineCursorChanged.fire([[0, 0]]);
     
-    $propbagHost = $propertyHost;
-
-    propertyBag.init();
-
-    propertyBag.addTextareaProperty('ants', 'Ants', "[[50, 50, 0, ['R', 'L']]]", function(value) {
+    properties.addTextareaProperty('ants', 'Ants', "[[50, 50, 0, ['R', 'L']]]", function(value) {
       ants = JSON.parse(value.replace(/'/g, "\""));
     });
 
-    propertyBag.createUI($propertyHost);
+    properties.createUI($propertyHost);
   };
 
   that.clear = function() {
-    $propbagHost.empty();
+    properties.clear();
   };
 
   that.stepForward = function() {
