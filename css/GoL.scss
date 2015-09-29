@@ -89,16 +89,19 @@
   display: inline-block;
   width: 59%;
 }
+
 input[type='text'] {
   width: 50px;
 }
 
-.model-property-caption {
-  min-width: 150px;
-  display: inline-block;
-}
+.model-properties {  
+  .model-property-caption {
+    min-width: 150px;
+    display: inline-block;
+  }
 
-#ants {
-  width: 400px;
-  overflow: hidden;
+  textarea {
+    width: 400px;
+    overflow: hidden;
+  }
 }
