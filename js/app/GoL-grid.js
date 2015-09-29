@@ -10,7 +10,6 @@ define(['jquery', 'app/GoL-model', 'app/renderers/renderers', 'app/engines/engin
       the_doc = 0,
       cellChangedCallback = 0,
       cursorChangedCallback = 0,
-      cursosrShape = 0,
       interval = 0,
       nextstep = 0,
       nextyield = 0,
@@ -128,7 +127,6 @@ define(['jquery', 'app/GoL-model', 'app/renderers/renderers', 'app/engines/engin
         
         cursorChangedCallback = $.Callbacks();
         cursorChangedCallback.add(function(shape) {
-          cursosrShape = shape;
           renderer.setCursorShape(shape.cells);
         });        
 
