@@ -21,7 +21,7 @@ define(['app/sparse-2d-array', 'app/property-bag'], function(sparse, propertyBag
   };
 
   that.clear = function() {
-    $propertyHost.clear();
+    $propbagHost.empty();
   };
 
   that.stepForward = function() {
