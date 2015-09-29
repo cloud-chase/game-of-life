@@ -7,10 +7,10 @@ define(['jquery', 'app/GoL-model', 'app/renderers/renderers', 'app/engines/engin
       iterations = 0,
       renderer = 0,
       engine = 0,
+      cursorShape = [[0, 0]],
       the_doc = 0,
       cellChangedCallback = 0,
-      engineCursorChanged = 0,
-      cursosrShape = 0,
+      cursorChangedCallback = 0,
       interval = 0,
       nextstep = 0,
       nextyield = 0,
@@ -117,14 +117,20 @@ define(['jquery', 'app/GoL-model', 'app/renderers/renderers', 'app/engines/engin
         var rendererInfo = renderers.getDefault(),
             engineInfo = engines.getDefault();
 
+        the_doc = doc;
         grid_rows = rows;
         grid_cols = cols;
 
-        the_doc = doc;
         cellChangedCallback = $.Callbacks();
         cellChangedCallback.add(function(cell, alive) {
           renderer && renderer.cellChanged && renderer.cellChanged(cell, alive);
         });
+        
+        cursorChangedCallback = $.Callbacks();
+        cursorChangedCallback.add(function(shape) {
+          cursorShape = shape;
+          renderer.setCursorShape(shape);
+        });        
 
         model.init(-1, -1, cellChangedCallback);
 
@@ -134,14 +140,8 @@ define(['jquery', 'app/GoL-model', 'app/renderers/renderers', 'app/engines/engin
         });
 
         require([engineInfo.file], function(e) {
-          engineCursorChanged = $.Callbacks();
-          engineCursorChanged.add(function(shape) {
-            cursosrShape = shape;
-            renderer.setCursorShape(shape.cells);
-          });
-
           engine = e;
-          engine.init(model, engineCursorChanged, $(".model-properties"));
+          engine.init(model, cursorShape, cursorChangedCallback, $(".model-properties"));
         });
 
         $(".GoLGrid").css({"width": gridWidth, "height": gridHeight});
@@ -178,11 +178,11 @@ define(['jquery', 'app/GoL-model', 'app/renderers/renderers', 'app/engines/engin
   };
 
   $(function() {
-    var index = 0,
-      $renderers = $('#renderers'),
-      $engines = $('#engines');
+    var $renderers = $('#renderers'),
+        $engines = $('#engines');
 
     golStatus = golStatusMgr();
+    
     renderers.list().forEach(function(r) {
       var selected = '';
       if (r.default) {
@@ -190,8 +190,10 @@ define(['jquery', 'app/GoL-model', 'app/renderers/renderers', 'app/engines/engin
       }
       $renderers.append($('<option ' + selected + '></option>').val(r.file).html(r.name));
     });
+    
     $renderers.on('change', function(e) {
       $("#grid1").empty();
+      
       require([this.value], function(r) {
         renderer = r;
         renderer.init(the_doc, grid_rows, grid_cols, model);
@@ -206,19 +208,14 @@ define(['jquery', 'app/GoL-model', 'app/renderers/renderers', 'app/engines/engin
       }
       $engines.append($('<option ' + selected + '></option>').val(e.file).html(e.name));
     });
+    
     $engines.on('change', function(e) {
       GoLGrid.prototype.clear();
       engine.clear();
 
       require([this.value], function(e) {
-        engineCursorChanged = $.Callbacks();
-        engineCursorChanged.add(function(shape) {
-          cursosrShape = shape;
-          renderer.setCursorShape(shape.cells);
-        });
-
         engine = e;
-        engine.init(model, engineCursorChanged, $(".model-properties"));
+        engine.init(model, cursorShape, cursorChangedCallback, $(".model-properties"));
       });
     });
   });

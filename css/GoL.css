@@ -81,10 +81,10 @@
 input[type='text'] {
   width: 50px; }
 
-.model-property-caption {
+.model-properties .model-property-caption {
   min-width: 150px;
   display: inline-block; }
 
-#ants {
+.model-properties textarea {
   width: 400px;
   overflow: hidden; }

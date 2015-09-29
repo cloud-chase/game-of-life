@@ -5,8 +5,10 @@ define(['app/sparse-2d-array', 'app/property-bag'], function(sparse, propertyBag
       $propbagHost = 0,
       that = {};
 
-  that.init = function(amodel, engineCursorChanged, $propertyHost) {
+  that.init = function(amodel, cursorShape, engineCursorChanged, $propertyHost) {
     model = amodel;
+    engineCursorChanged.fire([[0, 0]]);
+    
     $propbagHost = $propertyHost;
 
     propertyBag.init();
@@ -16,13 +18,10 @@ define(['app/sparse-2d-array', 'app/property-bag'], function(sparse, propertyBag
     });
 
     propertyBag.createUI($propertyHost);
-
-    ants = [[50, 50, 0, ['R', 'L']]];
-// [[50, 50, 0, ['R', 'L']]]
   };
 
   that.clear = function() {
-    $propertyHost.clear();
+    $propbagHost.empty();
   };
 
   that.stepForward = function() {
