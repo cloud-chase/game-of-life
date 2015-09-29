@@ -176,9 +176,8 @@ define(['jquery', 'app/GoL-model', 'app/renderers/renderers', 'app/engines/engin
   };
 
   $(function() {
-    var index = 0,
-      $renderers = $('#renderers'),
-      $engines = $('#engines');
+    var $renderers = $('#renderers'),
+        $engines = $('#engines');
 
     golStatus = golStatusMgr();
     renderers.list().forEach(function(r) {
@@ -188,6 +187,7 @@ define(['jquery', 'app/GoL-model', 'app/renderers/renderers', 'app/engines/engin
       }
       $renderers.append($('<option ' + selected + '></option>').val(r.file).html(r.name));
     });
+    
     $renderers.on('change', function(e) {
       $("#grid1").empty();
       require([this.value], function(r) {
