@@ -10,9 +10,13 @@ define(function() {
         and columns that the rendered grid should display, and a model which
         the renderer will use.
       */
-      init = function(doc, rows, cols, model, grid) {
+      init = function(doc, cellSize, model, $grid) {
 
         var row, cell, background_grid, background_row, background_cell, foreground_grid,
+            width = $grid.width(),
+            height = $grid.height(),
+            rows = Math.floor(height / cellSize),
+            cols = Math.floor(width / cellSize),
             rowH = (100 / rows) + "%",
             colW = (100 / cols) + "%";
 
@@ -24,8 +28,8 @@ define(function() {
           return newDiv;
         };
 
-        background_grid = addDivTo(doc, grid, 'background-grid', '');
-        foreground_grid = addDivTo(doc, grid, 'foreground-grid', '');
+        background_grid = addDivTo(doc, $grid[0], 'background-grid', '');
+        foreground_grid = addDivTo(doc, $grid[0], 'foreground-grid', '');
         nodes.push(background_grid);
         nodes.push(foreground_grid);
 
