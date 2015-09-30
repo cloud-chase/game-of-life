@@ -100,14 +100,18 @@ define(['app/sparse-2d-array', 'app/GoL-shapes', 'app/property-bag'], function(s
   that.init = function(amodel, cursorShape, engineCursorChanged, $propertyHost) {
     model = amodel;
 
-    properties.addTextProperty('extraBirths', 'Extra births / 1000', 0, setExtraBirthsRate);
-    properties.addTextProperty('extraDeaths', 'Extra deaths / 1000', 0, setExtraDeathsRate);
-    properties.addTextProperty('increaseBirths', 'Increase births / 1000', 0, setIncreaseFertilityRateRate);
-    properties.addTextProperty('increaseDeaths', 'Extra births / 1000', 0, setIncreaseDeathRate);
+    properties.addTextProperty('extraBirths', 'Extra births / 1000',
+      'Extra births to randomly occur per 1000 tests', 0, setExtraBirthsRate);
+    properties.addTextProperty('extraDeaths', 'Extra deaths / 1000',
+      'Extra deaths to randomly occur per 1000 tests', 0, setExtraDeathsRate);
+    properties.addTextProperty('increaseBirths', 'Increase births / 1000',
+      'Increases the chance of random births after each test per 1000 tests', 0, setIncreaseFertilityRateRate);
+    properties.addTextProperty('increaseDeaths', 'Extra births / 1000',
+      'Increases the chance of random deaths after each test per 1000 tests', 0, setIncreaseDeathRate);
 
     // shape size limit 250 x 250 also applied in grunt build
     initShapes(250, 250);
-    properties.addDropdownProperty('shapes', 'Shape', shapes, function(index) {
+    properties.addDropdownProperty('shapes', 'Shape', 'Select from a range of pre-defined shapes', shapes, function(index) {
       engineCursorChanged.fire(shapes[index].cells);
     });
 

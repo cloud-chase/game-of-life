@@ -8,8 +8,10 @@ define(['app/sparse-2d-array', 'app/property-bag'], function(sparse, propertyBag
   that.init = function(amodel, cursorShape, engineCursorChanged, $propertyHost) {
     model = amodel;
     engineCursorChanged.fire([[0, 0]]);
-    
-    properties.addTextareaProperty('ants', 'Ants', "[[50, 50, 0, ['R', 'L']]]", function(value) {
+
+    properties.addTextareaProperty('ants', 'Ants',
+      "Each ant consists of [row, col, ant state, turns]\n0 <= ant state < 4\nturns is an array of 'L' 'R' strings",
+      "[\n[50, 50, 0, ['R', 'L']]\n]", function(value) {
       ants = JSON.parse(value.replace(/'/g, "\""));
     });
 
