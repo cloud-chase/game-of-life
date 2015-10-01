@@ -42,10 +42,11 @@ define(['jquery'], function($) {
 
               context.clearRect(0, 0, width, height);
 
-              startX = Math.floor(((width - gridLineWidth) % cols) / 2);
-              startY = Math.floor(((height - gridLineWidth) % rows) / 2);
-              rowHeight = Math.floor((height - gridLineWidth) / rows);
-              colWidth = Math.floor((width - gridLineWidth) / cols);
+              // Correct these for sizing by cell, tidy up in next commit
+              startX = 0;
+              startY = 0;
+              rowHeight = cellSize;
+              colWidth = cellSize;
 
               firstRow = Math.floor(scrollY / rowHeight);
               firstCol = Math.floor(scrollX / colWidth);
