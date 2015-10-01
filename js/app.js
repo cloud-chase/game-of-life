@@ -11,5 +11,5 @@ requirejs.config({
 
 var g;
 requirejs(['app/GoL-grid'], function(grid) {
-  g = new grid(document, "80%", "100%", 2);	// min cellSize 2 - anything below not viable
+  g = new grid(document, "80%", "100%", 4);	// min cellSize 2 - anything below not viable
 });
