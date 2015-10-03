@@ -2,9 +2,9 @@ define(['jquery'], function($) {
 
   var cursorShape = [[0,0]],
       cursorCell,
-      startX, startY, rowHeight, colWidth,
       firstRow, firstCol, lastRow, lastCol, firstRowInset, firstColInset,
       nodes = [],
+      cellSize = 0,
       model, context, cursorContext,
       gridColor = '#e6e6fa',
       aliveColor = ['#202066', '#aa2200', '#447722', '#5511aa', '#99aa22', '#22aa99', '#994477'],
@@ -20,7 +20,8 @@ define(['jquery'], function($) {
         and columns that the rendered grid should display, and a model which
         the renderer will use.
       */
-      init = function(doc, cellSize, amodel, container) {
+      init = function(doc, inCellSize, amodel, container) {
+        cellSize = inCellSize;
 
         var $grid = $(container),
             canvas = doc.createElement("Canvas"),
@@ -42,47 +43,41 @@ define(['jquery'], function($) {
 
               context.clearRect(0, 0, width, height);
 
-              // Correct these for sizing by cell, tidy up in next commit
-              startX = 0;
-              startY = 0;
-              rowHeight = cellSize;
-              colWidth = cellSize;
-
-              firstRow = Math.floor(scrollY / rowHeight);
-              firstCol = Math.floor(scrollX / colWidth);
+              firstRow = Math.floor(scrollY / cellSize);
+              firstCol = Math.floor(scrollX / cellSize);
               lastRow = firstRow + rows;
               lastCol = firstCol + cols;
-              firstRowInset = ((scrollY % rowHeight) + rowHeight) % rowHeight;
-              firstColInset = ((scrollX % colWidth) + colWidth) % colWidth;
+              firstRowInset = ((scrollY % cellSize) + cellSize) % cellSize;
+              firstColInset = ((scrollX % cellSize) + cellSize) % cellSize;
 
               // draw a grid
               context.strokeStyle = gridColor;
               context.lineWidth = gridLineWidth;
 
-              step = startX - firstColInset + ((gridLineWidth % 2) / 2);
-              start = startY;
-              end = startY + ((lastRow - firstRow) * rowHeight) + gridLineWidth;
+              step = - firstColInset + ((gridLineWidth % 2) / 2);
+              start = 0;
+              end = ((lastRow - firstRow) * cellSize) + gridLineWidth;
 
               if (firstColInset === 0) {
                 context.moveTo(step, start);
                 context.lineTo(step, end);
               }
 
-              for (i = firstCol + 1, step += colWidth; i <= lastCol; i++, step += colWidth) {
+              for (i = firstCol + 1, step += cellSize; i <= lastCol; i++, step += cellSize) {
                 context.moveTo(step, start);
                 context.lineTo(step, end);
               }
 
-              step = startY - firstRowInset + ((gridLineWidth % 2) / 2);
-              start = startX;
-              end = startX + ((lastCol - firstCol) * colWidth) + gridLineWidth;
+              step = firstRowInset + ((gridLineWidth % 2) / 2);
+              start = 0;
+              end = ((lastCol - firstCol) * cellSize) + gridLineWidth;
 
               if (firstRowInset === 0) {
                 context.moveTo(start, step);
                 context.lineTo(end, step);
               }
 
-              for (i = firstRow + 1, step += rowHeight; i <= lastRow; i++, step += rowHeight) {
+              for (i = firstRow + 1, step += cellSize; i <= lastRow; i++, step += cellSize) {
                 context.moveTo(start, step);
                 context.lineTo(end, step);
               }
@@ -111,8 +106,8 @@ define(['jquery'], function($) {
         var setCursor = function(event) {
               // update cursor position
               var o = $canvas.offset(),
-                  row = firstRow + Math.floor((event.pageY - o.top - startY + firstRowInset) / rowHeight),
-                  column = firstCol + Math.floor((event.pageX - o.left - startX + firstColInset) / colWidth),
+                  row = firstRow + Math.floor((event.pageY - o.top + firstRowInset) / cellSize),
+                  column = firstCol + Math.floor((event.pageX - o.left + firstColInset) / cellSize),
                   result = true;
 
               if ((row < firstRow) || (column < firstCol) || (row > lastRow) || (column > lastCol)) {
@@ -213,23 +208,23 @@ define(['jquery'], function($) {
       paintCell = function(drawcontext, cell, color) {
         if ((cell[0] >= firstRow) && (cell[1] >= firstCol) && (cell[0] <= lastRow) && (cell[1] <= lastCol)) {
           var grid = ((gridLineWidth + (gridLineWidth % 2)) / 2),
-              x = startX + ((cell[1] - firstCol) * colWidth) - firstColInset + grid,
-              y = startY + ((cell[0] - firstRow) * rowHeight) - firstRowInset + grid,
-              w = colWidth - gridLineWidth,
-              h = rowHeight - gridLineWidth;
+              x = ((cell[1] - firstCol) * cellSize) - firstColInset + grid,
+              y = ((cell[0] - firstRow) * cellSize) - firstRowInset + grid,
+              w = cellSize - gridLineWidth,
+              h = cellSize - gridLineWidth;
 
           if (+cell[0] === firstRow) {
             y += firstRowInset - gridLineWidth;
             h -= firstRowInset - gridLineWidth;
           } else if (+cell[0] === lastRow) {
-            h -= rowHeight - firstRowInset - gridLineWidth;
+            h -= cellSize - firstRowInset - gridLineWidth;
           }
 
           if (+cell[1] === firstCol) {
             x += firstColInset - gridLineWidth;
             w -= firstColInset - gridLineWidth;
           } else if (+cell[1] === lastCol) {
-            w -= colWidth - firstColInset - gridLineWidth;
+            w -= cellSize - firstColInset - gridLineWidth;
           }
 
           if (color) {
@@ -244,9 +239,9 @@ define(['jquery'], function($) {
       drawCursor = function() {
         if (cursorContext) {
           // draw/redraw/remove any current cursor
-          cursorContext.clearRect(startX, startY,
-                                  ((lastCol - firstCol) * colWidth) + gridLineWidth,
-                                  ((lastRow - firstRow) * rowHeight) + gridLineWidth);
+          cursorContext.clearRect(0, 0,
+                                  ((lastCol - firstCol) * cellSize) + gridLineWidth,
+                                  ((lastRow - firstRow) * cellSize) + gridLineWidth);
           if (cursorCell) {
             for (var offset of cursorShape) {
               var cell = [cursorCell[0] + offset[0], cursorCell[1] + offset[1]];
