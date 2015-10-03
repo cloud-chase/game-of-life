@@ -68,7 +68,7 @@ define(['jquery'], function($) {
                 context.lineTo(step, end);
               }
 
-              step = firstRowInset + ((gridLineWidth % 2) / 2);
+              step = - firstRowInset + ((gridLineWidth % 2) / 2);
               start = 0;
               end = ((lastCol - firstCol) * cellSize) + gridLineWidth;
 
