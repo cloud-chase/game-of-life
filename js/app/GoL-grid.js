@@ -2,8 +2,7 @@ define(['jquery', 'app/GoL-model', 'app/renderers/renderers', 'app/engines/engin
   function($, model, renderers, engines, propBagUI) {
 
   var golStatus = {},
-      grid_rows = 0,
-      grid_cols = 0,
+      cellSize = 0,
       iterations = 0,
       renderer = 0,
       engine = 0,
@@ -113,30 +112,29 @@ define(['jquery', 'app/GoL-model', 'app/renderers/renderers', 'app/engines/engin
       },
 
       // Constructor
-      GoLGrid = function(doc, gridHeight, gridWidth, rows, cols) {
+      GoLGrid = function(doc, gridHeight, gridWidth, inCellSize) {
         var rendererInfo = renderers.getDefault(),
             engineInfo = engines.getDefault();
 
         the_doc = doc;
-        grid_rows = rows;
-        grid_cols = cols;
+        cellSize = Math.max(inCellSize, 2); // min cell size 2 - anything below not viable
 
         cellChangedCallback = $.Callbacks();
         cellChangedCallback.add(function(cell, alive) {
           renderer && renderer.cellChanged && renderer.cellChanged(cell, alive);
         });
-        
+
         cursorChangedCallback = $.Callbacks();
         cursorChangedCallback.add(function(shape) {
           cursorShape = shape;
           renderer.setCursorShape(shape);
-        });        
+        });
 
         model.init(-1, -1, cellChangedCallback);
 
         require([rendererInfo.file], function(r) {
           renderer = r;
-          renderer.init(the_doc, grid_rows, grid_cols, model, $("#grid1"));
+          renderer.init(the_doc, cellSize, model, $("#grid1"));
         });
 
         require([engineInfo.file], function(e) {
@@ -182,7 +180,7 @@ define(['jquery', 'app/GoL-model', 'app/renderers/renderers', 'app/engines/engin
         $engines = $('#engines');
 
     golStatus = golStatusMgr();
-    
+
     renderers.list().forEach(function(r) {
       var selected = '';
       if (r.default) {
@@ -190,13 +188,13 @@ define(['jquery', 'app/GoL-model', 'app/renderers/renderers', 'app/engines/engin
       }
       $renderers.append($('<option ' + selected + '></option>').val(r.file).html(r.name));
     });
-    
+
     $renderers.on('change', function(e) {
       renderer && renderer.clear();
 
       require([this.value], function(r) {
         renderer = r;
-        renderer.init(the_doc, grid_rows, grid_cols, model, $("#grid1"));
+        renderer.init(the_doc, cellSize, model, $("#grid1"));
         renderer.setCursorShape(cursorShape.cells);
       });
     });
@@ -208,11 +206,11 @@ define(['jquery', 'app/GoL-model', 'app/renderers/renderers', 'app/engines/engin
       }
       $engines.append($('<option ' + selected + '></option>').val(e.file).html(e.name));
     });
-    
+
     $engines.on('change', function(e) {
       var old = engine;
       engine = undefined;
-      
+
       GoLGrid.prototype.clear();
       old.clear();
 

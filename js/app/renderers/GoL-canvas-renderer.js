@@ -20,7 +20,7 @@ define(['jquery'], function($) {
         and columns that the rendered grid should display, and a model which
         the renderer will use.
       */
-      init = function(doc, rows, cols, amodel, container) {
+      init = function(doc, cellSize, amodel, container) {
 
         var $grid = $(container),
             canvas = doc.createElement("Canvas"),
@@ -32,6 +32,8 @@ define(['jquery'], function($) {
             redraw = function() {
               var width = $grid.width(),
                   height = $grid.height(),
+                  rows = Math.floor(height / cellSize),
+                  cols = Math.floor(width / cellSize),
                   step, start, end;
 
               // update and reset the canvas, in case dimensions have changed
@@ -40,10 +42,11 @@ define(['jquery'], function($) {
 
               context.clearRect(0, 0, width, height);
 
-              startX = Math.floor(((width - gridLineWidth) % cols) / 2);
-              startY = Math.floor(((height - gridLineWidth) % rows) / 2);
-              rowHeight = Math.floor((height - gridLineWidth) / rows);
-              colWidth = Math.floor((width - gridLineWidth) / cols);
+              // Correct these for sizing by cell, tidy up in next commit
+              startX = 0;
+              startY = 0;
+              rowHeight = cellSize;
+              colWidth = cellSize;
 
               firstRow = Math.floor(scrollY / rowHeight);
               firstCol = Math.floor(scrollX / colWidth);
@@ -126,7 +129,7 @@ define(['jquery'], function($) {
 
               return result;
             },
-            
+
             applyCursor = function() {
               // apply current cursor to model
               if (cursorCell) {
@@ -195,7 +198,7 @@ define(['jquery'], function($) {
           }
         });
       },
-      
+
       /**
         Reset the renderer, removing any DOM constructs that were created.
       */
@@ -237,7 +240,7 @@ define(['jquery'], function($) {
           }
         }
       },
-      
+
       drawCursor = function() {
         if (cursorContext) {
           // draw/redraw/remove any current cursor
@@ -278,7 +281,8 @@ define(['jquery'], function($) {
     init: init,
     cellChanged: cellChanged,
     setCursorShape: setCursorShape,
-    name: 'GoL-canvas-renderer'
+    name: 'GoL-canvas-renderer',
+    clear
   };
 
 });
