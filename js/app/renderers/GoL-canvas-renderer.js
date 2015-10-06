@@ -2,9 +2,10 @@ define(['jquery'], function($) {
 
   var cursorShape = [[0,0]],
       cursorCell,
-      firstRow, firstCol, lastRow, lastCol, firstRowInset, firstColInset,
+      cellSize,
+      firstRow, firstCol, lastRow, lastCol,
+      firstRowInset, firstColInset, lastRowInset, lastColInset,
       nodes = [],
-      cellSize = 0,
       model, context, cursorContext,
       gridColor = '#e6e6fa',
       aliveColor = ['#202066', '#aa2200', '#447722', '#5511aa', '#99aa22', '#22aa99', '#994477'],
@@ -20,11 +21,8 @@ define(['jquery'], function($) {
         and columns that the rendered grid should display, and a model which
         the renderer will use.
       */
-      init = function(doc, inCellSize, amodel, container) {
-        cellSize = inCellSize;
-
-        var $grid = $(container),
-            canvas = doc.createElement("Canvas"),
+      init = function(doc, inCellSize, amodel, $grid) {
+        var canvas = doc.createElement("Canvas"),
             $canvas = $(canvas),
             cursorCanvas = doc.createElement("Canvas"),
             $cursorCanvas = $(cursorCanvas),
@@ -33,8 +31,8 @@ define(['jquery'], function($) {
             redraw = function() {
               var width = $grid.width(),
                   height = $grid.height(),
-                  rows = Math.floor(height / cellSize),
-                  cols = Math.floor(width / cellSize),
+                  rows = 1 + Math.floor(height / cellSize),
+                  cols = 1 + Math.floor(width / cellSize),
                   step, start, end;
 
               // update and reset the canvas, in case dimensions have changed
@@ -49,6 +47,8 @@ define(['jquery'], function($) {
               lastCol = firstCol + cols;
               firstRowInset = ((scrollY % cellSize) + cellSize) % cellSize;
               firstColInset = ((scrollX % cellSize) + cellSize) % cellSize;
+              lastRowInset = (rows * cellSize) - height - firstRowInset;
+              lastColInset = (cols * cellSize) - width - firstColInset;
 
               // draw a grid
               context.strokeStyle = gridColor;
@@ -56,32 +56,42 @@ define(['jquery'], function($) {
 
               step = - firstColInset + ((gridLineWidth % 2) / 2);
               start = 0;
-              end = ((lastRow - firstRow) * cellSize) + gridLineWidth;
+              end = height;
 
-              if (firstColInset === 0) {
+              if (step >= 0) {
                 context.moveTo(step, start);
                 context.lineTo(step, end);
               }
 
-              for (i = firstCol + 1, step += cellSize; i <= lastCol; i++, step += cellSize) {
+              for (i = firstCol + 1, step += cellSize; i <= lastCol - 1; i++, step += cellSize) {
+                context.moveTo(step, start);
+                context.lineTo(step, end);
+              }
+              
+              if (step < width) {
                 context.moveTo(step, start);
                 context.lineTo(step, end);
               }
 
-              step = firstRowInset + ((gridLineWidth % 2) / 2);
+              step = - firstRowInset + ((gridLineWidth % 2) / 2);
               start = 0;
-              end = ((lastCol - firstCol) * cellSize) + gridLineWidth;
+              end = width;
 
-              if (firstRowInset === 0) {
+              if (step >= 0) {
                 context.moveTo(start, step);
                 context.lineTo(end, step);
               }
 
-              for (i = firstRow + 1, step += cellSize; i <= lastRow; i++, step += cellSize) {
+              for (i = firstRow + 1, step += cellSize; i <= lastRow - 1; i++, step += cellSize) {
                 context.moveTo(start, step);
                 context.lineTo(end, step);
               }
 
+              if (step < height) {
+                context.moveTo(start, step);
+                context.lineTo(end, step);
+              }
+              
               context.stroke();
 
               // draw the cell states
@@ -91,6 +101,7 @@ define(['jquery'], function($) {
               drawCursor();
             };
 
+        cellSize = inCellSize;
         $grid.append(canvas);
         $grid.append(cursorCanvas);
         nodes.push(canvas);
@@ -217,14 +228,14 @@ define(['jquery'], function($) {
             y += firstRowInset - gridLineWidth;
             h -= firstRowInset - gridLineWidth;
           } else if (+cell[0] === lastRow) {
-            h -= cellSize - firstRowInset - gridLineWidth;
+            h -= lastRowInset;
           }
 
           if (+cell[1] === firstCol) {
             x += firstColInset - gridLineWidth;
             w -= firstColInset - gridLineWidth;
           } else if (+cell[1] === lastCol) {
-            w -= cellSize - firstColInset - gridLineWidth;
+            w -= lastColInset;
           }
 
           if (color) {
@@ -274,10 +285,10 @@ define(['jquery'], function($) {
 
   return {
     init: init,
+    clear: clear,
     cellChanged: cellChanged,
     setCursorShape: setCursorShape,
-    name: 'GoL-canvas-renderer',
-    clear
+    name: 'GoL-canvas-renderer'
   };
 
 });
