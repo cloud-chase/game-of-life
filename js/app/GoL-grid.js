@@ -117,7 +117,7 @@ define(['jquery', 'app/GoL-model', 'app/renderers/renderers', 'app/engines/engin
             engineInfo = engines.getDefault();
 
         the_doc = doc;
-        cellSize = Math.max(inCellSize, 2); // min cell size 2 - anything below not viable
+        cellSize = inCellSize;
 
         cellChangedCallback = $.Callbacks();
         cellChangedCallback.add(function(cell, alive) {

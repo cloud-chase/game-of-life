@@ -1,20 +1,117 @@
 define(['jquery'], function($) {
 
-  var cursorShape = [[0,0]],
-      cursorCell,
-      cellSize,
-      firstRow, firstCol, lastRow, lastCol,
-      firstRowInset, firstColInset, lastRowInset, lastColInset,
+  var cursorShape = [[0,0]], cursorCell,
+      gridLineWidth, cellSize,
+      width, height,
+      scrollX, scrollY,
       nodes = [],
       model, context, cursorContext,
       gridColor = '#e6e6fa',
       aliveColor = ['#202066', '#aa2200', '#447722', '#5511aa', '#99aa22', '#22aa99', '#994477'],
       cursorColor = '#8080ff',
-      gridLineWidth = 1,
 
+      // returns a color to use for the supplied cell value
       statecolor = function(value) {
         return value ? aliveColor[(typeof value === 'number') ? ((value - 1) % aliveColor.length) : 0] : null;
       },
+
+      paintCell = function(drawcontext, cell, color) {
+        // calculate the area to draw in canvas coordinates
+        var x = (cell[1] * cellSize) - scrollX,
+            y = (cell[0] * cellSize) - scrollY,
+            w = cellSize,
+            h = cellSize;
+
+        // if the cell isn't in the canvas area there's nothing to do
+        if ((x + w > 0) && (y + h > 0) && (x < width) && (y < height)) {
+
+          // exclude the grid line from the area to draw
+          x += ((Math.ceil(gridLineWidth) % 2) / 2) + (gridLineWidth / 2);
+          y += ((Math.ceil(gridLineWidth) % 2) / 2) + (gridLineWidth / 2);
+          w -= gridLineWidth;
+          h -= gridLineWidth;
+
+          // first and last row/col might be partial
+          if (x < 0) {
+            w += x;
+            x = 0;
+          } else if (x + w > width) {
+            w = width - x;
+          }
+
+          if (y < 0) {
+            h += y;
+            y = 0;
+          } else if (y + h > height) {
+            h = height - y;
+          }
+
+          // draw or clear the area
+          if (color) {
+            drawcontext.fillStyle = color;
+            drawcontext.fillRect(x, y, w, h);
+          } else {
+            drawcontext.clearRect(x, y, w, h);
+          }
+        }
+      },
+
+      drawCursor = function() {
+        if (cursorContext) {
+          // remove any current cursor
+          cursorContext.clearRect(0, 0, width, height);
+
+          // paint new cursor cells on the cursor context
+          if (cursorCell) {
+            for (var offset of cursorShape) {
+              var cell = [cursorCell[0] + offset[0], cursorCell[1] + offset[1]];
+              model.getCell(cell);
+              paintCell(cursorContext, cell, cursorColor);
+            }
+          }
+        }
+      },
+
+      redraw = function() {
+        var step;
+
+        // clear the context and draw a grid
+        context.clearRect(0, 0, width, height);
+
+        if (gridLineWidth > 0) {
+          context.beginPath();
+          context.strokeStyle = gridColor;
+          context.lineWidth = gridLineWidth;
+
+          // draw vertical grid lines
+          step = ((((-scrollX) % cellSize) - cellSize) % cellSize) + ((Math.ceil(gridLineWidth) % 2) / 2);
+
+          for (; step + (gridLineWidth / 2) < 0; step += cellSize) {}
+
+          for (; step - (gridLineWidth / 2) < width; step += cellSize) {
+            context.moveTo(step, 0);
+            context.lineTo(step, height);
+          }
+
+          // draw horizontal grid lines
+          step = ((((-scrollY) % cellSize) - cellSize) % cellSize) + ((Math.ceil(gridLineWidth) % 2) / 2);
+
+          for (; step + (gridLineWidth / 2) < 0; step += cellSize) {}
+
+          for (; step - (gridLineWidth / 2) < height; step += cellSize) {
+            context.moveTo(0, step);
+            context.lineTo(width, step);
+          }
+
+          context.stroke();
+        }
+
+        // draw the cell states
+        model.forEachLiving(function(cell, state) { paintCell(context, cell, statecolor(state)); });
+
+        // draw the cursor
+        drawCursor();
+      };
 
       /**
         Initialise the renderer. The HTML document is supplied, and the rows
@@ -26,108 +123,31 @@ define(['jquery'], function($) {
             $canvas = $(canvas),
             cursorCanvas = doc.createElement("Canvas"),
             $cursorCanvas = $(cursorCanvas),
-            scrollX = 0, scrollY = 0,
 
-            redraw = function() {
-              var width = $grid.width(),
-                  height = $grid.height(),
-                  rows = 1 + Math.floor(height / cellSize),
-                  cols = 1 + Math.floor(width / cellSize),
-                  step, start, end;
-
-              // update and reset the canvas, in case dimensions have changed
+            setSize = function() {
+              width = $grid.width();
+              height = $grid.height();
               $canvas.attr('width', width).attr('height', height);
               $cursorCanvas.attr('width', width).attr('height', height);
+              redraw();
+            },
 
-              context.clearRect(0, 0, width, height);
-
-              firstRow = Math.floor(scrollY / cellSize);
-              firstCol = Math.floor(scrollX / cellSize);
-              lastRow = firstRow + rows;
-              lastCol = firstCol + cols;
-              firstRowInset = ((scrollY % cellSize) + cellSize) % cellSize;
-              firstColInset = ((scrollX % cellSize) + cellSize) % cellSize;
-              lastRowInset = (rows * cellSize) - height - firstRowInset;
-              lastColInset = (cols * cellSize) - width - firstColInset;
-
-              // draw a grid
-              context.strokeStyle = gridColor;
-              context.lineWidth = gridLineWidth;
-
-              step = - firstColInset + ((gridLineWidth % 2) / 2);
-              start = 0;
-              end = height;
-
-              if (step >= 0) {
-                context.moveTo(step, start);
-                context.lineTo(step, end);
-              }
-
-              for (i = firstCol + 1, step += cellSize; i <= lastCol - 1; i++, step += cellSize) {
-                context.moveTo(step, start);
-                context.lineTo(step, end);
-              }
-              
-              if (step < width) {
-                context.moveTo(step, start);
-                context.lineTo(step, end);
-              }
-
-              step = - firstRowInset + ((gridLineWidth % 2) / 2);
-              start = 0;
-              end = width;
-
-              if (step >= 0) {
-                context.moveTo(start, step);
-                context.lineTo(end, step);
-              }
-
-              for (i = firstRow + 1, step += cellSize; i <= lastRow - 1; i++, step += cellSize) {
-                context.moveTo(start, step);
-                context.lineTo(end, step);
-              }
-
-              if (step < height) {
-                context.moveTo(start, step);
-                context.lineTo(end, step);
-              }
-              
-              context.stroke();
-
-              // draw the cell states
-              model.forEachLiving(function(cell, state) { paintCell(context, cell, statecolor(state)); });
-
-              // draw the cursor
-              drawCursor();
-            };
-
-        cellSize = inCellSize;
-        $grid.append(canvas);
-        $grid.append(cursorCanvas);
-        nodes.push(canvas);
-        nodes.push(cursorCanvas);
-        $cursorCanvas.css({ position: 'absolute', left: '0', right: '0' });
-        context = canvas.getContext('2d');
-        cursorContext = cursorCanvas.getContext('2d');
-        model = amodel;
-
-        redraw();
-        $(window).resize(redraw);
-
-        var setCursor = function(event) {
+            setCursor = function(event) {
               // update cursor position
               var o = $canvas.offset(),
-                  row = firstRow + Math.floor((event.pageY - o.top + firstRowInset) / cellSize),
-                  column = firstCol + Math.floor((event.pageX - o.left + firstColInset) / cellSize),
+                  x = event.pageX - o.left,
+                  y = event.pageY - o.top,
+                  row = Math.floor((scrollY + y) / cellSize),
+                  col = Math.floor((scrollX + x) / cellSize),
                   result = true;
 
-              if ((row < firstRow) || (column < firstCol) || (row > lastRow) || (column > lastCol)) {
+              if ((x < 0) || (y < 0) || (x >= width) || (y >= height)) {
                 cursorCell = undefined;
                 $("#activeCell").text("Active Cell:");
                 drawCursor();
-              } else if (!cursorCell || (row != cursorCell[0]) || (column != cursorCell[1])) {
-                cursorCell = [row, column];
-                $("#activeCell").text("Active Cell - Row: " + row + ", Col: " + column);
+              } else if (!cursorCell || (row != cursorCell[0]) || (col != cursorCell[1])) {
+                cursorCell = [row, col];
+                $("#activeCell").text("Active Cell - Row: " + row + ", Col: " + col);
                 drawCursor();
               } else {
                 result = false;
@@ -153,6 +173,20 @@ define(['jquery'], function($) {
 
             mousedown = false,
             mousedownX, mousedownY, mousedownScrollX, mousedownScrollY, mousemoving;
+
+        cellSize = inCellSize;
+        gridLineWidth = (cellSize > 1) ? 1 : 0;
+        scrollX = 0;
+        scrollY = 0;
+        $grid.append(canvas).append(cursorCanvas);
+        nodes.push(canvas, cursorCanvas);
+        $cursorCanvas.css({ position: 'absolute', left: '0', right: '0' });
+        context = canvas.getContext('2d');
+        cursorContext = cursorCanvas.getContext('2d');
+        model = amodel;
+
+        setSize();
+        $(window).resize(setSize);
 
         $('#grid1 canvas').mousedown(function(event) {
           setCursor(event);
@@ -214,53 +248,6 @@ define(['jquery'], function($) {
         }
         nodes.length = 0;
         model = context = cursorContext = undefined;
-      },
-
-      paintCell = function(drawcontext, cell, color) {
-        if ((cell[0] >= firstRow) && (cell[1] >= firstCol) && (cell[0] <= lastRow) && (cell[1] <= lastCol)) {
-          var grid = ((gridLineWidth + (gridLineWidth % 2)) / 2),
-              x = ((cell[1] - firstCol) * cellSize) - firstColInset + grid,
-              y = ((cell[0] - firstRow) * cellSize) - firstRowInset + grid,
-              w = cellSize - gridLineWidth,
-              h = cellSize - gridLineWidth;
-
-          if (+cell[0] === firstRow) {
-            y += firstRowInset - gridLineWidth;
-            h -= firstRowInset - gridLineWidth;
-          } else if (+cell[0] === lastRow) {
-            h -= lastRowInset;
-          }
-
-          if (+cell[1] === firstCol) {
-            x += firstColInset - gridLineWidth;
-            w -= firstColInset - gridLineWidth;
-          } else if (+cell[1] === lastCol) {
-            w -= lastColInset;
-          }
-
-          if (color) {
-            drawcontext.fillStyle = color;
-            drawcontext.fillRect(x, y, w, h);
-          } else {
-            drawcontext.clearRect(x, y, w, h);
-          }
-        }
-      },
-
-      drawCursor = function() {
-        if (cursorContext) {
-          // draw/redraw/remove any current cursor
-          cursorContext.clearRect(0, 0,
-                                  ((lastCol - firstCol) * cellSize) + gridLineWidth,
-                                  ((lastRow - firstRow) * cellSize) + gridLineWidth);
-          if (cursorCell) {
-            for (var offset of cursorShape) {
-              var cell = [cursorCell[0] + offset[0], cursorCell[1] + offset[1]];
-              model.getCell(cell);
-              paintCell(cursorContext, cell, cursorColor);
-            }
-          }
-        }
       },
 
       /**
