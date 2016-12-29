@@ -106,7 +106,7 @@ define(['app/sparse-2d-array', 'app/GoL-shapes', 'app/property-bag'], function(s
       'Extra deaths to randomly occur per 1000 tests', 0, setExtraDeathsRate);
     properties.addTextProperty('increaseBirths', 'Increase births / 1000',
       'Increases the chance of random births after each test per 1000 tests', 0, setIncreaseFertilityRateRate);
-    properties.addTextProperty('increaseDeaths', 'Extra births / 1000',
+    properties.addTextProperty('increaseDeaths', 'Increase deaths / 1000',
       'Increases the chance of random deaths after each test per 1000 tests', 0, setIncreaseDeathRate);
 
     // shape size limit 250 x 250 also applied in grunt build

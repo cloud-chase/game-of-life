@@ -53,7 +53,7 @@ define(['jquery'], function($) {
       that.createUI = function($host) {
         var $propEl, $propVal, $elem;
 
-        for (var prop of props) {
+        for (let prop of props) {
           $propEl = $host.append($('<div class="model-property"><span class="model-property-caption">' + prop.caption + ':</span>')).find('.model-property').last();
           $propVal = $propEl.append($('<span class="model-property-value"></span>')).find('.model-property-value').last();
 
